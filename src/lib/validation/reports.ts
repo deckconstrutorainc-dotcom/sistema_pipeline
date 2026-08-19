@@ -15,6 +15,15 @@ export const reportMetricValues = [
 ] as const;
 export type ReportMetric = (typeof reportMetricValues)[number];
 
+/** Rótulos em pt-BR de cada métrica — usado tanto em /reports quanto na
+ * aba "Relatórios" de um pipe, para não duplicar o mapeamento. */
+export const reportMetricLabels: Record<ReportMetric, string> = {
+  phase_counts: "Cards por fase",
+  avg_time_in_phase: "Tempo médio por fase",
+  completion_rate: "Taxa de conclusão",
+  sla_summary: "Resumo de SLA/prazo",
+};
+
 export const reportConfigSchema = z.object({
   metric: z.enum(reportMetricValues),
   phaseIds: z.array(z.string().uuid()).optional(),

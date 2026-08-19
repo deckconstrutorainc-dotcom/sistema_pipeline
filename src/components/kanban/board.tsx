@@ -14,9 +14,16 @@ interface KanbanBoardProps {
   phases: PhaseSummary[];
   initialCards: CardSummary[];
   labels: LabelSummary[];
+  canManagePhases?: boolean;
 }
 
-export function KanbanBoard({ pipeId, phases, initialCards, labels }: KanbanBoardProps) {
+export function KanbanBoard({
+  pipeId,
+  phases,
+  initialCards,
+  labels,
+  canManagePhases = false,
+}: KanbanBoardProps) {
   const router = useRouter();
   const [cards, setCards] = useState(initialCards);
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
@@ -94,6 +101,7 @@ export function KanbanBoard({ pipeId, phases, initialCards, labels }: KanbanBoar
               cards={cardsByPhase.get(phase.id) ?? []}
               pipeId={pipeId}
               labelsById={labelsById}
+              canManagePhases={canManagePhases}
             />
           ))}
         </div>

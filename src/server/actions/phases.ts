@@ -65,6 +65,7 @@ export async function createPhase(input: CreatePhaseInput): Promise<ActionResult
     is_initial: parsed.data.isInitial,
     is_final: parsed.data.isFinal,
     sla_hours: parsed.data.slaHours ?? null,
+    color: parsed.data.color ?? null,
   });
 
   if (error) {
@@ -92,6 +93,7 @@ export async function updatePhase(input: UpdatePhaseInput): Promise<ActionResult
   if (parsed.data.isInitial !== undefined) update.is_initial = parsed.data.isInitial;
   if (parsed.data.isFinal !== undefined) update.is_final = parsed.data.isFinal;
   if (parsed.data.slaHours !== undefined) update.sla_hours = parsed.data.slaHours;
+  if (parsed.data.color !== undefined) update.color = parsed.data.color;
 
   const supabase = await createClient();
   const { error } = await supabase
@@ -105,6 +107,19 @@ export async function updatePhase(input: UpdatePhaseInput): Promise<ActionResult
   }
 
   return { success: true };
+}
+
+/**
+ * Atalho para atualizar apenas a cor de destaque de uma fase (usado pelo
+ * seletor de cor embutido no cabeçalho da coluna do Kanban). Reaproveita
+ * `updatePhase` para não duplicar a checagem de permissão/RLS.
+ */
+export async function updatePhaseColor(input: {
+  phaseId: string;
+  pipeId: string;
+  color: string | null;
+}): Promise<ActionResult> {
+  return updatePhase({ phaseId: input.phaseId, pipeId: input.pipeId, color: input.color });
 }
 
 /** Reordena as fases de um pipe (atualiza `position` de cada uma). */

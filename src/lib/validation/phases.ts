@@ -1,5 +1,26 @@
 import { z } from "zod";
 
+// Paleta fixa de cores para as fases do Kanban (não é um color picker livre
+// — CLAUDE.md §3.30/§30: interface própria, não uma réplica visual de
+// nenhuma ferramenta de mercado). Qualquer hex fora desta lista ainda é
+// aceito pelo schema/constraint do banco (permite dados legados ou futura
+// expansão), mas a UI só oferece estas oito opções.
+export const phaseColorPalette = [
+  "#64748B", // slate
+  "#3B82F6", // blue
+  "#10B981", // emerald
+  "#F59E0B", // amber
+  "#EF4444", // red
+  "#8B5CF6", // violet
+  "#EC4899", // pink
+  "#06B6D4", // cyan
+] as const;
+
+const hexColorSchema = z
+  .string()
+  .regex(/^#[0-9A-Fa-f]{6}$/, "Cor inválida.")
+  .nullable();
+
 export const createPhaseSchema = z.object({
   pipeId: z.string().uuid("Pipe inválido."),
   name: z
@@ -17,6 +38,7 @@ export const createPhaseSchema = z.object({
     .max(24 * 365, "SLA muito alto.")
     .nullable()
     .optional(),
+  color: hexColorSchema.optional(),
 });
 export type CreatePhaseInput = z.infer<typeof createPhaseSchema>;
 
@@ -34,6 +56,7 @@ export const updatePhaseSchema = z.object({
     .max(24 * 365, "SLA muito alto.")
     .nullable()
     .optional(),
+  color: hexColorSchema.optional(),
 });
 export type UpdatePhaseInput = z.infer<typeof updatePhaseSchema>;
 

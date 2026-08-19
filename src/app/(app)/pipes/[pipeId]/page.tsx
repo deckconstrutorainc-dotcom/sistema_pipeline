@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { CreateCardForm } from "@/components/forms/create-card-form";
 import { KanbanBoard } from "@/components/kanban/board";
-import { requireActiveOrganization } from "@/lib/auth/session";
+import { hasOrgRole, requireActiveOrganization } from "@/lib/auth/session";
 import { getPipeBoardData } from "@/server/queries/pipes";
 
 interface PipePageProps {
@@ -11,7 +11,7 @@ interface PipePageProps {
 
 export default async function PipeKanbanPage({ params }: PipePageProps) {
   const { pipeId } = await params;
-  await requireActiveOrganization();
+  const organization = await requireActiveOrganization();
 
   const board = await getPipeBoardData(pipeId);
 
@@ -29,34 +29,16 @@ export default async function PipeKanbanPage({ params }: PipePageProps) {
     );
   }
 
+  const canManagePhases = await hasOrgRole(organization.id, ["super_admin", "admin"]);
+
   return (
     <div className="space-y-6">
       <div className="space-y-1">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-semibold tracking-tight">{board.pipe.name}</h1>
-          <div className="flex items-center gap-3">
-            {board.pipe.isArchived ? (
-              <span className="text-sm text-muted-foreground">(arquivado)</span>
-            ) : null}
-            <Link
-              href={`/pipes/${board.pipe.id}/automations`}
-              className="text-sm text-primary underline-offset-4 hover:underline"
-            >
-              Automações
-            </Link>
-            <Link
-              href={`/pipes/${board.pipe.id}/portals`}
-              className="text-sm text-primary underline-offset-4 hover:underline"
-            >
-              Portais
-            </Link>
-            <Link
-              href={`/pipes/${board.pipe.id}/documents`}
-              className="text-sm text-primary underline-offset-4 hover:underline"
-            >
-              Documentos
-            </Link>
-          </div>
+          {board.pipe.isArchived ? (
+            <span className="text-sm text-muted-foreground">(arquivado)</span>
+          ) : null}
         </div>
         {board.pipe.description ? (
           <p className="text-muted-foreground">{board.pipe.description}</p>
@@ -75,6 +57,7 @@ export default async function PipeKanbanPage({ params }: PipePageProps) {
           phases={board.phases}
           initialCards={board.cards}
           labels={board.labels}
+          canManagePhases={canManagePhases}
         />
       )}
     </div>

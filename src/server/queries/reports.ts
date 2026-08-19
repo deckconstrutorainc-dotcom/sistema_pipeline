@@ -26,14 +26,26 @@ export interface ReportSummary {
   updatedAt: string;
 }
 
-/** Lista os reports visíveis ao usuário na organização (RLS decide o subconjunto real). */
-export async function listReports(organizationId: string): Promise<ReportSummary[]> {
+/**
+ * Lista os reports visíveis ao usuário na organização (RLS decide o
+ * subconjunto real). Quando `pipeId` é informado, filtra apenas os
+ * reports escopados a esse pipe (`reports.pipe_id`) — usado pela aba
+ * "Relatórios" dentro de um pipe, reaproveitando esta mesma query em vez
+ * de duplicar a lógica de listagem.
+ */
+export async function listReports(organizationId: string, pipeId?: string): Promise<ReportSummary[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase
+  let query = supabase
     .from("reports")
     .select("id, organization_id, pipe_id, name, description, config, created_by, created_at, updated_at")
     .eq("organization_id", organizationId)
     .order("created_at", { ascending: false });
+
+  if (pipeId) {
+    query = query.eq("pipe_id", pipeId);
+  }
+
+  const { data, error } = await query;
 
   if (error || !data) return [];
 

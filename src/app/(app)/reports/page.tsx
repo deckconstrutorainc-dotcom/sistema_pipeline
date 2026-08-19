@@ -3,16 +3,9 @@ import Link from "next/link";
 import { CreateReportForm } from "@/components/forms/create-report-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { hasOrgRole, requireActiveOrganization } from "@/lib/auth/session";
-import { reportMetricValues } from "@/lib/validation/reports";
+import { reportMetricLabels } from "@/lib/validation/reports";
 import { listPipes } from "@/server/actions/pipes";
 import { listReports } from "@/server/queries/reports";
-
-const metricLabels: Record<(typeof reportMetricValues)[number], string> = {
-  phase_counts: "Cards por fase",
-  avg_time_in_phase: "Tempo médio por fase",
-  completion_rate: "Taxa de conclusão",
-  sla_summary: "Resumo de SLA/prazo",
-};
 
 export default async function ReportsPage() {
   const organization = await requireActiveOrganization();
@@ -54,7 +47,7 @@ export default async function ReportsPage() {
                   <CardTitle>{report.name}</CardTitle>
                 </CardHeader>
                 <CardContent className="text-sm text-muted-foreground">
-                  <p>{metricLabels[report.config.metric]}</p>
+                  <p>{reportMetricLabels[report.config.metric]}</p>
                   {report.description ? <p className="mt-1">{report.description}</p> : null}
                 </CardContent>
               </Card>
