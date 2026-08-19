@@ -3,11 +3,11 @@
   "crons": [
     {
       "path": "/api/automations/process",
-      "schedule": "*/5 * * * *"
+      "schedule": "0 3 * * *"
     },
     {
       "path": "/api/ai/process",
-      "schedule": "*/5 * * * *"
+      "schedule": "15 3 * * *"
     }
   ]
 }
