@@ -45,37 +45,58 @@
  * já existem quando a primeira migration do projeto roda.
  *
  * ---------------------------------------------------------------------
- * LIMITAÇÃO DE FIDELIDADE ENCONTRADA E CONTORNADA NESTE HARNESS
+ * COMPORTAMENTO REAL DE RLS SELF-REFERENCING EM INSERT...RETURNING
+ * (contornado corretamente neste harness, por coincidência, desde o início)
  * ---------------------------------------------------------------------
- * `@electric-sql/pglite` 0.5.5 tem uma particularidade (reproduzida com um
- * schema mínimo, isolada de qualquer código deste projeto) no mecanismo de
- * "WITH CHECK" de RLS: quando um role SEM bypassrls (`authenticated`/
- * `anon`) executa um `INSERT ... RETURNING` numa tabela cuja policy de
- * SELECT invoca uma função (`SECURITY DEFINER` ou não, `STABLE` ou não —
- * testado nas duas variações) que consulta de volta a própria tabela (o
- * padrão usado em TODAS as policies deste projeto, ex.: `is_pipe_member`
- * consultando `pipes`), o Postgres real aceitaria a linha (a policy de
- * SELECT enxerga a linha recém-inserida dentro do mesmo comando), mas o
- * PGlite recusa com "new row violates row-level security policy", mesmo
- * com o `WITH CHECK` da policy de INSERT batendo `true` isoladamente.
- * `UPDATE ... RETURNING` NÃO tem esse problema (testado e confirmado) — só
- * `INSERT ... RETURNING`. Isso é o que faria, por exemplo, o equivalente a
- * `supabaseClient.from("pipes").insert({...}).select().single()` (o padrão
- * usado por TODOS os testes de integração HTTP deste repositório) falhar
- * aqui por um artefato do ambiente de teste, não por um bug real de RLS.
+ * IMPORTANTE: uma versão anterior deste comentário descrevia isto como uma
+ * "particularidade"/"artefato" do `@electric-sql/pglite`, afirmando que "o
+ * Postgres real aceitaria a linha". Isso estava ERRADO e foi confirmado
+ * empiricamente contra um projeto Supabase real hospedado (Postgres de
+ * produção, via PostgREST): o mesmo erro acontece lá. NÃO é uma limitação
+ * do ambiente de teste — é um comportamento real do Postgres/PostgREST.
  *
- * CONTORNO: `insertReturning()` abaixo NUNCA usa `INSERT ... RETURNING`
- * diretamente quando o role atual pode estar sujeito a RLS. Em vez disso:
+ * O comportamento: quando um role SEM bypassrls (`authenticated`/`anon`)
+ * executa um `INSERT ... RETURNING` numa tabela cuja policy de SELECT
+ * invoca uma função (`SECURITY DEFINER` ou não, `STABLE` ou não) que
+ * consulta de volta a PRÓPRIA tabela usando o id da linha que está sendo
+ * inserida (ex.: `is_pipe_member(id)` consultando `public.pipes where
+ * id = target_pipe_id`, quando `id` É o id da linha recém-inserida em
+ * `pipes`), a avaliação da policy de SELECT sobre a linha do RETURNING
+ * falha a enxergar essa linha, e tanto o Postgres real quanto o PGlite
+ * recusam com "new row violates row-level security policy for table X"
+ * (42501) — mesmo com o `WITH CHECK` do INSERT batendo com sucesso
+ * isoladamente. Isso NÃO acontece quando a policy de SELECT consulta uma
+ * tabela DIFERENTE que já existia antes do insert (ex.: `card_field_values`
+ * cuja policy passa por `cards`, que não está sendo inserida) — só é um
+ * problema quando a tabela consultada pela policy é a MESMA que recebeu o
+ * INSERT. `UPDATE ... RETURNING` não tem esse problema (testado e
+ * confirmado nos dois ambientes).
+ *
+ * Por isso o mesmo padrão (`supabaseClient.from("pipes").insert({...})
+ * .select().single()`) foi corrigido no código de produção
+ * (`src/server/actions/pipes.ts`, função `createPipe`): o `id` agora é
+ * gerado no client (`randomUUID()`) ANTES do insert, o insert é feito sem
+ * `.select()` encadeado, e o `id` já conhecido é usado diretamente — sem
+ * nenhuma dependência do `RETURNING`. As demais tabelas do projeto foram
+ * auditadas (policy por policy, e confirmado empiricamente contra o
+ * projeto Supabase real) e nenhuma outra tem esse padrão de
+ * self-reference — `pipes` era a única.
+ *
+ * CONTORNO NESTE HARNESS: `insertReturning()` abaixo NUNCA usa
+ * `INSERT ... RETURNING` diretamente quando o role atual pode estar
+ * sujeito a RLS. Em vez disso:
  *   1. gera um `id` (uuid) no lado do client quando não informado;
  *   2. executa um `INSERT` simples (sem `RETURNING`);
  *   3. executa um `SELECT ... WHERE id = $1` separado, como uma segunda
  *      instrução independente.
  * Isso reproduz fielmente a semântica de `.insert().select().single()" do
  * PostgREST (inclusive validando a policy de SELECT como uma checagem real
- * e independente) sem esbarrar na particularidade acima. `service_role`
- * (bypassrls) não é afetado por essa particularidade (confirmado), mas
- * `insertReturning()` usa o mesmo caminho para todos os roles, por
- * simplicidade e consistência.
+ * e independente) e, por já seguir exatamente o mesmo padrão da correção
+ * acima, sempre evitou esse comportamento aqui — por isso a suíte de testes
+ * de integração nunca acusou o problema, mesmo ele existindo em produção.
+ * `service_role` (bypassrls) não é afetado por este comportamento
+ * (confirmado), mas `insertReturning()` usa o mesmo caminho para todos os
+ * roles, por simplicidade e consistência.
  *
  * ---------------------------------------------------------------------
  * O QUE ESTE HARNESS NÃO COBRE (ver relatório final da tarefa)

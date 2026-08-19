@@ -1,5 +1,7 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
+
 import { redirect } from "next/navigation";
 
 import { requireActiveOrganization, requireAuth, requireOrgRole } from "@/lib/auth/session";
@@ -85,26 +87,32 @@ export async function createPipe(input: CreatePipeInput): Promise<ActionResult> 
 
   const user = await requireOrgRole(parsed.data.organizationId, ["super_admin", "admin"]);
 
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("pipes")
-    .insert({
-      organization_id: parsed.data.organizationId,
-      name: parsed.data.name,
-      description: parsed.data.description ?? null,
-      icon: parsed.data.icon ?? null,
-      color: parsed.data.color ?? null,
-      is_restricted: parsed.data.isRestricted,
-      created_by: user.id,
-    })
-    .select("id")
-    .single();
+  // Gera o id no client em vez de usar `.insert().select().single()`: a
+  // policy `pipes_select` (`is_pipe_member(id)`) reconsulta a própria
+  // tabela `pipes`, e o RETURNING de um INSERT avalia essa policy contra o
+  // snapshot do INÍCIO do comando — que ainda não enxerga a linha recém-
+  // inserida. Resultado: PostgREST recusa com "new row violates row-level
+  // security policy", mesmo com o INSERT (WITH CHECK) validado com sucesso.
+  // Conhecendo o id de antemão, evitamos depender do RETURNING.
+  const pipeId = randomUUID();
 
-  if (error || !data) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("pipes").insert({
+    id: pipeId,
+    organization_id: parsed.data.organizationId,
+    name: parsed.data.name,
+    description: parsed.data.description ?? null,
+    icon: parsed.data.icon ?? null,
+    color: parsed.data.color ?? null,
+    is_restricted: parsed.data.isRestricted,
+    created_by: user.id,
+  });
+
+  if (error) {
     return { success: false, error: "Não foi possível criar o pipe." };
   }
 
-  redirect(`/pipes/${(data as { id: string }).id}`);
+  redirect(`/pipes/${pipeId}`);
 }
 
 export async function updatePipe(input: UpdatePipeInput): Promise<ActionResult> {
