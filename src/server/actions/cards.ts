@@ -103,6 +103,23 @@ export async function createCard(input: CreateCardInput): Promise<ActionResult> 
 
   await logActivity(supabase, cardId, "card_created", { title: parsed.data.title });
 
+  if (parsed.data.assigneeId) {
+    // Atribuição de responsável na criação é uma conveniência de UX (modal
+    // "Novo card"); se falhar por algum motivo raro (ex.: usuário removido
+    // da organização entre o carregamento do formulário e o submit), o
+    // card já foi criado com sucesso e não deve ser desfeito por causa
+    // disso — apenas registramos e seguimos, o usuário pode atribuir
+    // manualmente depois pela página do card.
+    const { error: assignError } = await supabase.from("card_assignments").insert({
+      card_id: cardId,
+      user_id: parsed.data.assigneeId,
+      assigned_by: user.id,
+    });
+    if (!assignError) {
+      await logActivity(supabase, cardId, "assigned", { user_id: parsed.data.assigneeId });
+    }
+  }
+
   revalidatePath(`/pipes/${parsed.data.pipeId}`);
   return { success: true, cardId };
 }

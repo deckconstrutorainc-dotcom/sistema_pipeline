@@ -16,6 +16,7 @@ import { listAiRunsForCard } from "@/server/actions/ai-runs";
 import { getCardDetail, listChecklistItems } from "@/server/queries/cards";
 import { listDocumentTemplatesForPipe, listGeneratedDocumentsForCard } from "@/server/queries/documents";
 import { getEmailThreadsForCard } from "@/server/queries/email";
+import { listProfilesByIds } from "@/server/queries/organizations";
 import { getPipeBoardData } from "@/server/queries/pipes";
 
 const aiRunStatusLabels: Record<string, string> = {
@@ -70,16 +71,20 @@ export default async function CardDetailPage({ params }: CardPageProps) {
   const organization = await requireActiveOrganization();
 
   const [card, board] = await Promise.all([getCardDetail(cardId), getPipeBoardData(pipeId)]);
-  const [emailThreads, documentTemplates, generatedDocuments, aiAgents, aiRuns, checklistItems] = card
-    ? await Promise.all([
-        getEmailThreadsForCard(card.id),
-        listDocumentTemplatesForPipe(organization.id, pipeId),
-        listGeneratedDocumentsForCard(card.id),
-        listAiAgents(organization.id),
-        listAiRunsForCard(card.id),
-        listChecklistItems(card.id),
-      ])
-    : [[], [], [], [], [], []];
+  const [emailThreads, documentTemplates, generatedDocuments, aiAgents, aiRuns, checklistItems, assigneeProfiles] =
+    card
+      ? await Promise.all([
+          getEmailThreadsForCard(card.id),
+          listDocumentTemplatesForPipe(organization.id, pipeId),
+          listGeneratedDocumentsForCard(card.id),
+          listAiAgents(organization.id),
+          listAiRunsForCard(card.id),
+          listChecklistItems(card.id),
+          listProfilesByIds(card.assigneeIds),
+        ])
+      : [[], [], [], [], [], [], []];
+
+  const assigneeNameById = new Map(assigneeProfiles.map((p) => [p.id, p.fullName]));
 
   const availableAiAgents = aiAgents.filter(
     (agent) => agent.isActive && (agent.pipeId === null || agent.pipeId === pipeId),
@@ -362,7 +367,7 @@ export default async function CardDetailPage({ params }: CardPageProps) {
           ) : (
             <ul className="space-y-1 text-sm">
               {card.assigneeIds.map((id) => (
-                <li key={id}>{id}</li>
+                <li key={id}>{assigneeNameById.get(id) ?? "Usuário removido"}</li>
               ))}
             </ul>
           )}

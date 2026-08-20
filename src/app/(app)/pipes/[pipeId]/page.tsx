@@ -3,6 +3,7 @@ import Link from "next/link";
 import { CreateCardForm } from "@/components/forms/create-card-form";
 import { KanbanBoard } from "@/components/kanban/board";
 import { hasOrgRole, requireActiveOrganization } from "@/lib/auth/session";
+import { listOrganizationMembersForAssignment } from "@/server/queries/organizations";
 import { getPipeBoardData } from "@/server/queries/pipes";
 
 interface PipePageProps {
@@ -30,6 +31,12 @@ export default async function PipeKanbanPage({ params }: PipePageProps) {
   }
 
   const canManagePhases = await hasOrgRole(organization.id, ["super_admin", "admin"]);
+  const members = await listOrganizationMembersForAssignment(organization.id);
+
+  const initialPhaseId = board.phases.find((p) => p.isInitial)?.id;
+  const requiredFieldIds = board.phaseFields
+    .filter((pf) => pf.phaseId === initialPhaseId && pf.isRequired)
+    .map((pf) => pf.fieldId);
 
   return (
     <div className="space-y-6">
@@ -45,7 +52,12 @@ export default async function PipeKanbanPage({ params }: PipePageProps) {
         ) : null}
       </div>
 
-      <CreateCardForm pipeId={board.pipe.id} />
+      <CreateCardForm
+        pipeId={board.pipe.id}
+        fields={board.fields}
+        requiredFieldIds={requiredFieldIds}
+        members={members}
+      />
 
       {board.phases.length === 0 ? (
         <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">

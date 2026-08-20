@@ -8,6 +8,7 @@ export const createCardSchema = z.object({
   title: z.string().trim().min(1, "Informe o título do card.").max(200, "Título muito longo."),
   dueDate: z.string().datetime().optional().nullable(),
   fieldValues: z.record(z.string().uuid(), z.unknown()).optional(),
+  assigneeId: z.string().uuid("Responsável inválido.").optional().nullable(),
 });
 export type CreateCardInput = z.infer<typeof createCardSchema>;
 
