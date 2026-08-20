@@ -100,12 +100,20 @@ async function getOrCreateSystemAgentId(
   organizationId: string,
   actorUserId: string,
 ): Promise<string> {
-  const { data: existing } = await admin
+  const { data: existing, error: selectError } = await admin
     .from("ai_agents")
     .select("id")
     .eq("organization_id", organizationId)
     .eq("name", SYSTEM_AGENT_NAME)
+    .order("created_at", { ascending: true })
+    .limit(1)
     .maybeSingle<{ id: string }>();
+
+  if (selectError) {
+    throw new Error(
+      `Não foi possível verificar o agente de sistema existente (${selectError.message}).`,
+    );
+  }
 
   if (existing) {
     return existing.id;
@@ -128,7 +136,11 @@ async function getOrCreateSystemAgentId(
     .single<{ id: string }>();
 
   if (error || !created) {
-    throw new Error("Não foi possível preparar o agente de sistema para registrar a execução de IA.");
+    // Inclui a mensagem real do Postgres/PostgREST — não é dado sensível
+    // (é um erro de infraestrutura interna, não de negócio), e sem isso é
+    // impossível diagnosticar a causa real a partir do app publicado.
+    const detail = error?.message ?? "erro desconhecido";
+    throw new Error(`Não foi possível preparar o agente de sistema para registrar a execução de IA (${detail}).`);
   }
 
   return created.id;
