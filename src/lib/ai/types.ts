@@ -36,6 +36,14 @@ export interface AIGenerateParams {
   tools: AIToolSpec[];
   /** Modelo a usar; cada provider define seu próprio default quando omitido. */
   model?: string;
+  /**
+   * Entrada de áudio opcional (feature "Voz -> Card", M8), consumida hoje
+   * apenas por `GeminiProvider` — `AnthropicProvider`/`NullAIProvider` não
+   * suportam entrada multimodal e devem lançar um erro explícito quando este
+   * campo vier preenchido (nunca ignorar silenciosamente um áudio que o
+   * chamador esperava que fosse processado; CLAUDE.md §3.15/§17).
+   */
+  audio?: { base64: string; mimeType: string };
 }
 
 /** Uma chamada de tool solicitada pelo modelo — id opaco do provider,

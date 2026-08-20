@@ -16,8 +16,13 @@ import type { AIGenerateParams, AIGenerateResult, AIProvider } from "@/lib/ai/ty
 export class NullAIProvider implements AIProvider {
   readonly providerKey = "null" as const;
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- assinatura documental da interface (AIProvider); nunca lê os parâmetros, só retorna uma resposta fixa de teste/dev.
   async generate(params: AIGenerateParams): Promise<AIGenerateResult> {
+    if (params.audio) {
+      throw new Error(
+        "NullAIProvider não suporta entrada de áudio (nunca finge uma transcrição). Use GeminiProvider para testar a feature Voz -> Card.",
+      );
+    }
+
     return {
       content: "[NullAIProvider] Nenhuma chamada de API real foi feita — provider de desenvolvimento/teste.",
       toolCalls: [],

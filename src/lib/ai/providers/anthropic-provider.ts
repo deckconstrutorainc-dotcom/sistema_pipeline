@@ -65,6 +65,12 @@ export class AnthropicProvider implements AIProvider {
   }
 
   async generate(params: AIGenerateParams): Promise<AIGenerateResult> {
+    if (params.audio) {
+      throw new Error(
+        "AnthropicProvider não suporta entrada de áudio. Use GeminiProvider (feature Voz -> Card) para chamadas com `params.audio` preenchido.",
+      );
+    }
+
     const client = this.getClient();
     const model = params.model ?? DEFAULT_MODEL;
 

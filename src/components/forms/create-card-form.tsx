@@ -1,7 +1,8 @@
 "use client";
 
+import { Mic, Square } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -11,6 +12,7 @@ import { createCard } from "@/server/actions/cards";
 import { isFieldValueEmpty } from "@/lib/validation/fields";
 import type { FieldSummary } from "@/server/queries/pipes";
 import type { OrganizationMemberOption } from "@/server/queries/organizations";
+import type { VoiceExtractionData } from "@/server/services/voice-card-extraction";
 
 interface CreateCardFormProps {
   pipeId: string;
@@ -70,6 +72,23 @@ export function CreateCardForm({ pipeId, fields, requiredFieldIds, members }: Cr
     setFieldValues((prev) => ({ ...prev, [fieldId]: value }));
   }
 
+  /**
+   * Pré-preenche o formulário a partir do resultado de
+   * `/api/ai/voice-card-extraction` — NUNCA envia o card automaticamente
+   * (o usuário ainda precisa revisar e clicar em "Adicionar card", CLAUDE.md
+   * §3.27-3.29). Só sobrescreve campos que a IA de fato extraiu; o que já
+   * estava preenchido manualmente antes de gravar e não foi reconhecido no
+   * áudio permanece como estava.
+   */
+  function applyVoiceExtraction(data: VoiceExtractionData) {
+    if (data.title) setTitle(data.title);
+    if (data.dueDate) setDueDate(data.dueDate.slice(0, 16));
+    if (data.assigneeId) setAssigneeId(data.assigneeId);
+    if (Object.keys(data.fieldValues).length > 0) {
+      setFieldValues((prev) => ({ ...prev, ...data.fieldValues }));
+    }
+  }
+
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     setFormError(null);
@@ -123,6 +142,8 @@ export function CreateCardForm({ pipeId, fields, requiredFieldIds, members }: Cr
             </DialogHeader>
 
             <DialogBody className="space-y-4">
+              <VoiceRecordButton pipeId={pipeId} onExtracted={applyVoiceExtraction} />
+
               <div className="space-y-1">
                 <Label htmlFor="card-title">Título *</Label>
                 <Input
@@ -194,6 +215,213 @@ export function CreateCardForm({ pipeId, fields, requiredFieldIds, members }: Cr
       </Dialog>
     </>
   );
+}
+
+const MAX_RECORDING_SECONDS = 90;
+
+interface VoiceRecordButtonProps {
+  pipeId: string;
+  onExtracted: (data: VoiceExtractionData) => void;
+}
+
+type RecordingStatus = "idle" | "recording" | "processing" | "error";
+
+/**
+ * Botão "Gravar por voz" (feature Voz -> Card, M8): grava um áudio curto via
+ * `MediaRecorder` (`audio/webm`, leve e suportado nativamente pelo Gemini),
+ * envia para `POST /api/ai/voice-card-extraction` e pré-preenche o
+ * formulário com o resultado via `onExtracted` — NUNCA envia o card sozinho
+ * (o usuário revisa e clica em "Adicionar card" normalmente, CLAUDE.md
+ * §3.27-3.29).
+ *
+ * Limite de 90s (`MAX_RECORDING_SECONDS`): a gravação para automaticamente
+ * ao atingir o limite, evitando um payload grande demais para o Route
+ * Handler (ver comentário de limite de payload em
+ * `src/app/api/ai/voice-card-extraction/route.ts`).
+ *
+ * Requer contexto seguro (HTTPS ou localhost — exigência do próprio
+ * `getUserMedia`) e suporte a `MediaRecorder`. Quando ausente, o botão fica
+ * oculto com um aviso discreto em vez de quebrar o formulário — o usuário
+ * sempre pode preencher manualmente.
+ */
+function VoiceRecordButton({ pipeId, onExtracted }: VoiceRecordButtonProps) {
+  const [isSupported, setIsSupported] = useState(false);
+  const [status, setStatus] = useState<RecordingStatus>("idle");
+  const [error, setError] = useState<string | null>(null);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const chunksRef = useRef<Blob[]>([]);
+  const streamRef = useRef<MediaStream | null>(null);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    setIsSupported(
+      typeof navigator !== "undefined" &&
+        typeof window !== "undefined" &&
+        Boolean(navigator.mediaDevices?.getUserMedia) &&
+        typeof window.MediaRecorder !== "undefined",
+    );
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+      streamRef.current?.getTracks().forEach((track) => track.stop());
+    };
+  }, []);
+
+  function stopStream() {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    streamRef.current?.getTracks().forEach((track) => track.stop());
+    streamRef.current = null;
+  }
+
+  async function handleRecordingStopped() {
+    setStatus("processing");
+    try {
+      const blob = new Blob(chunksRef.current, { type: "audio/webm" });
+      const base64 = await blobToBase64(blob);
+
+      const response = await fetch("/api/ai/voice-card-extraction", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pipeId, audioBase64: base64, mimeType: "audio/webm" }),
+      });
+
+      const result = (await response.json()) as {
+        success: boolean;
+        error?: string;
+        data?: VoiceExtractionData;
+      };
+
+      if (!response.ok || !result.success || !result.data) {
+        setError(result.error ?? "Não foi possível transcrever o áudio. Preencha manualmente.");
+        setStatus("error");
+        return;
+      }
+
+      onExtracted(result.data);
+      setStatus("idle");
+      setElapsedSeconds(0);
+    } catch {
+      setError("Falha de conexão ao enviar o áudio para análise. Preencha manualmente.");
+      setStatus("error");
+    }
+  }
+
+  async function startRecording() {
+    setError(null);
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      const recorder = new MediaRecorder(stream, { mimeType: "audio/webm" });
+      chunksRef.current = [];
+
+      recorder.ondataavailable = (event) => {
+        if (event.data.size > 0) chunksRef.current.push(event.data);
+      };
+      recorder.onstop = () => {
+        stopStream();
+        void handleRecordingStopped();
+      };
+
+      mediaRecorderRef.current = recorder;
+      recorder.start();
+      setStatus("recording");
+      setElapsedSeconds(0);
+
+      timerRef.current = setInterval(() => {
+        setElapsedSeconds((prev) => {
+          const next = prev + 1;
+          if (next >= MAX_RECORDING_SECONDS) {
+            recorder.stop();
+          }
+          return next;
+        });
+      }, 1000);
+    } catch {
+      setError("Não foi possível acessar o microfone. Verifique a permissão do navegador.");
+      setStatus("error");
+    }
+  }
+
+  function stopRecording() {
+    mediaRecorderRef.current?.stop();
+  }
+
+  if (!isSupported) {
+    return (
+      <p className="text-xs text-muted-foreground">
+        Gravação por voz não está disponível neste navegador — preencha os campos manualmente.
+      </p>
+    );
+  }
+
+  return (
+    <div className="space-y-2 rounded-md border border-dashed p-3">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="text-sm font-medium">Preencher por voz</p>
+          <p className="text-xs text-muted-foreground">
+            Descreva o card em voz alta (até {MAX_RECORDING_SECONDS}s) — a IA pré-preenche os campos abaixo, você
+            revisa antes de confirmar.
+          </p>
+        </div>
+        {status === "recording" ? (
+          <Button type="button" variant="destructive" size="sm" onClick={stopRecording}>
+            <Square className="h-4 w-4" /> Parar ({elapsedSeconds}s)
+          </Button>
+        ) : (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={startRecording}
+            disabled={status === "processing"}
+          >
+            <Mic className="h-4 w-4" />
+            {status === "processing" ? "Transcrevendo..." : "Gravar por voz"}
+          </Button>
+        )}
+      </div>
+      {status === "recording" ? (
+        <p className="text-xs text-muted-foreground">
+          Gravando... a gravação para automaticamente aos {MAX_RECORDING_SECONDS}s.
+        </p>
+      ) : null}
+      {status === "processing" ? (
+        <p className="text-xs text-muted-foreground">Transcrevendo e analisando com IA...</p>
+      ) : null}
+      {error ? <p className="text-xs text-destructive">{error}</p> : null}
+    </div>
+  );
+}
+
+/** Converte o Blob gravado para base64 puro (sem o prefixo `data:...;base64,`
+ * da data URL), formato que o Route Handler espera no corpo JSON. */
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const result = reader.result;
+      if (typeof result !== "string") {
+        reject(new Error("Falha ao ler o áudio gravado."));
+        return;
+      }
+      const base64 = result.split(",")[1];
+      if (!base64) {
+        reject(new Error("Falha ao converter o áudio gravado."));
+        return;
+      }
+      resolve(base64);
+    };
+    reader.onerror = () => reject(new Error("Falha ao ler o áudio gravado."));
+    reader.readAsDataURL(blob);
+  });
 }
 
 interface CardFieldInputProps {
