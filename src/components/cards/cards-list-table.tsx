@@ -113,7 +113,96 @@ export function CardsListTable({ pipeId, cards, phases, labels }: CardsListTable
 
   return (
     <div className="space-y-3">
-      <div className="overflow-x-auto rounded-lg border">
+      {/*
+        Em telas pequenas, uma tabela com 7 colunas fica ilegível (texto
+        cortado ou scroll horizontal incômodo). Em vez disso, abaixo de
+        `md` renderizamos os mesmos dados como uma lista de cards
+        empilhados (label/valor); a tabela completa some (`hidden`) até lá.
+        Nenhuma lógica de busca/ordenação é duplicada — ambas as views leem
+        do mesmo `pageItems` já calculado acima.
+      */}
+      <ul className="space-y-2 md:hidden">
+        {pageItems.map((card) => {
+          const phase = phasesById.get(card.currentPhaseId);
+          const dueStatus = getDueStatus(card.dueDate);
+          return (
+            <li key={card.id} className="space-y-2 rounded-lg border p-3 text-sm">
+              <div className="flex items-start justify-between gap-2">
+                <Link
+                  href={`/pipes/${pipeId}/cards/${card.id}`}
+                  className="font-medium text-primary underline-offset-4 hover:underline"
+                >
+                  {card.title}
+                </Link>
+                <span className="shrink-0 text-xs text-muted-foreground">#{card.number}</span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
+                <div className="space-y-0.5">
+                  <p className="text-muted-foreground">Fase</p>
+                  <p className="inline-flex items-center gap-1.5">
+                    {phase?.color ? (
+                      <span
+                        className="size-2 rounded-full"
+                        style={{ backgroundColor: phase.color }}
+                        aria-hidden
+                      />
+                    ) : null}
+                    {phase?.name ?? "—"}
+                  </p>
+                </div>
+                <div className="space-y-0.5">
+                  <p className="text-muted-foreground">Prazo</p>
+                  <p className={cn(dueStatus === "overdue" && "font-medium text-destructive")}>
+                    {card.dueDate ? new Date(card.dueDate).toLocaleDateString("pt-BR") : "—"}
+                    {dueStatus === "overdue" ? (
+                      <Badge variant="destructive" className="ml-1">
+                        Atrasado
+                      </Badge>
+                    ) : dueStatus === "due_soon" ? (
+                      <Badge variant="warning" className="ml-1">
+                        Vence em breve
+                      </Badge>
+                    ) : null}
+                  </p>
+                </div>
+                <div className="space-y-0.5">
+                  <p className="text-muted-foreground">Responsáveis</p>
+                  <p>
+                    {card.assignees.length === 0
+                      ? "—"
+                      : card.assignees.map((a) => a.fullName ?? "Sem nome").join(", ")}
+                  </p>
+                </div>
+                <div className="space-y-0.5">
+                  <p className="text-muted-foreground">Criado em</p>
+                  <p>{new Date(card.createdAt).toLocaleDateString("pt-BR")}</p>
+                </div>
+              </div>
+
+              {card.labelIds.length > 0 ? (
+                <div className="flex flex-wrap gap-1">
+                  {card.labelIds.map((labelId) => {
+                    const label = labelsById.get(labelId);
+                    if (!label) return null;
+                    return (
+                      <span
+                        key={labelId}
+                        className="rounded-full px-2 py-0.5 text-xs text-white"
+                        style={{ backgroundColor: label.color }}
+                      >
+                        {label.name}
+                      </span>
+                    );
+                  })}
+                </div>
+              ) : null}
+            </li>
+          );
+        })}
+      </ul>
+
+      <div className="hidden overflow-x-auto rounded-lg border md:block">
         <table className="w-full text-sm">
           <thead className="bg-muted/50 text-left text-xs uppercase text-muted-foreground">
             <tr>
@@ -213,7 +302,7 @@ export function CardsListTable({ pipeId, cards, phases, labels }: CardsListTable
       </div>
 
       {totalPages > 1 ? (
-        <div className="flex items-center justify-between text-sm text-muted-foreground">
+        <div className="flex flex-col gap-2 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
           <span>
             Página {currentPage + 1} de {totalPages} ({sorted.length} cards)
           </span>
@@ -222,7 +311,7 @@ export function CardsListTable({ pipeId, cards, phases, labels }: CardsListTable
               type="button"
               onClick={() => setPage((p) => Math.max(0, p - 1))}
               disabled={currentPage === 0}
-              className="rounded-md border px-2 py-1 disabled:opacity-40"
+              className="min-h-11 rounded-md border px-3 disabled:opacity-40"
             >
               Anterior
             </button>
@@ -230,7 +319,7 @@ export function CardsListTable({ pipeId, cards, phases, labels }: CardsListTable
               type="button"
               onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
               disabled={currentPage >= totalPages - 1}
-              className="rounded-md border px-2 py-1 disabled:opacity-40"
+              className="min-h-11 rounded-md border px-3 disabled:opacity-40"
             >
               Próxima
             </button>

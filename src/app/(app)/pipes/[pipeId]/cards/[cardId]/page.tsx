@@ -110,7 +110,7 @@ export default async function CardDetailPage({ params }: CardPageProps) {
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-      <div className="space-y-4 lg:col-span-2">
+      <div className="order-2 space-y-4 lg:order-1 lg:col-span-2">
         <div className="space-y-1">
           <Link href={`/pipes/${pipeId}`} className="text-sm text-muted-foreground hover:underline">
             {card.pipeName}
@@ -341,7 +341,10 @@ export default async function CardDetailPage({ params }: CardPageProps) {
         </Tabs>
       </div>
 
-      <aside className="space-y-6">
+      {/* Em mobile, "Mover para fase" e o resumo do card aparecem primeiro
+          (a ação mais provável ao abrir um card pelo celular); a partir de
+          `lg` volta à ordem visual de sidebar à direita. */}
+      <aside className="order-1 space-y-6 lg:order-2">
         <section className="space-y-2">
           <h2 className="text-sm font-semibold">Mover para fase</h2>
           <MovePhasePanel

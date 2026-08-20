@@ -103,7 +103,12 @@ export function CardTile({ card, pipeId, labelsById, isDragOverlay = false }: Ca
       {...attributes}
       {...listeners}
       className={cn(
-        "cursor-grab space-y-2 rounded-md border bg-card p-3 text-sm shadow-sm active:cursor-grabbing",
+        // `touch-none` (touch-action: none) evita que o gesto de arrastar
+        // em touch seja interpretado como rolagem da página pelo
+        // navegador — necessário para o drag-and-drop (dnd-kit
+        // `PointerSensor`, que já cobre mouse e touch) funcionar bem em
+        // celular.
+        "cursor-grab touch-none space-y-2 rounded-md border bg-card p-3 text-sm shadow-sm active:cursor-grabbing",
         (isDragging || isDragOverlay) && "opacity-90 ring-2 ring-ring",
       )}
     >

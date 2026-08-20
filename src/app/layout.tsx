@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 
 import "./globals.css";
@@ -12,6 +12,15 @@ export const metadata: Metadata = {
   },
   description:
     "Plataforma independente de gestão de processos e workflows.",
+};
+
+// Next.js 15 App Router: viewport é um export separado de `metadata`.
+// Necessário para que o layout responsivo (mobile-first) seja respeitado
+// em dispositivos móveis — sem isso, navegadores mobile renderizam a
+// página numa viewport virtual larga e aplicam zoom, ignorando `sm:`/`md:`.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
 };
 
 export default function RootLayout({

@@ -51,7 +51,7 @@ export function PipeTabs({ pipeId }: PipeTabsProps) {
             key={tab.href}
             href={tab.href}
             className={cn(
-              "shrink-0 border-b-2 border-transparent px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground",
+              "flex min-h-11 shrink-0 items-center border-b-2 border-transparent px-3 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground",
               isActive && "border-primary text-foreground",
             )}
           >

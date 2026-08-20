@@ -93,7 +93,12 @@ export function KanbanBoard({
         onDragEnd={handleDragEnd}
         onDragCancel={() => setActiveCardId(null)}
       >
-        <div className="flex gap-4 overflow-x-auto pb-4">
+        {/* Colunas lado a lado com scroll horizontal — padrão universal de
+            Kanban em telas estreitas (Trello/Pipefy também fazem isso; não
+            é cópia de identidade visual, CLAUDE.md §30). `snap-x` "prende"
+            cada coluna ao rolar em touch, deixando a navegação mais fluida
+            no celular. */}
+        <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4">
           {phases.map((phase) => (
             <KanbanColumn
               key={phase.id}

@@ -22,7 +22,12 @@ export function KanbanColumn({ phase, cards, pipeId, labelsById, canManagePhases
     <div
       ref={setNodeRef}
       className={cn(
-        "flex w-72 shrink-0 flex-col overflow-visible rounded-lg border bg-muted/30 transition-colors",
+        // Em mobile a coluna ocupa a maior parte da largura da tela (com
+        // uma "espiada" da próxima coluna) para o conteúdo do card não
+        // ficar espremido; a partir de `sm` volta para a largura fixa de
+        // desktop. `snap-start` funciona com o `snap-x` do board (scroll
+        // horizontal "prende" em cada coluna, comum em Kanban mobile).
+        "flex w-[85vw] max-w-72 shrink-0 snap-start flex-col overflow-visible rounded-lg border bg-muted/30 transition-colors sm:w-72",
         isOver && "border-primary bg-muted/60",
       )}
       style={{ borderTopWidth: 3, borderTopColor: phase.color ?? "transparent" }}
