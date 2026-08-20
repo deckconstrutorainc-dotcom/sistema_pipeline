@@ -15,6 +15,16 @@ export interface CardCommentEntry {
   createdAt: string;
 }
 
+export interface ChecklistItemEntry {
+  id: string;
+  cardId: string;
+  title: string;
+  isDone: boolean;
+  position: number;
+  createdBy: string | null;
+  createdAt: string;
+}
+
 export interface CardAttachmentEntry {
   id: string;
   fileName: string;
@@ -157,4 +167,46 @@ export async function getCardDetail(cardId: string): Promise<CardDetail | null> 
       createdAt: r.created_at,
     })),
   };
+}
+
+/**
+ * Lista os itens de checklist de um card, ordenados por `position` e, em
+ * seguida, por data de criação (itens adicionados via `addChecklistItem`
+ * sempre recebem a próxima posição no fim da lista — ver
+ * `src/server/actions/checklists.ts`). RLS decide o que é visível; não há
+ * necessidade de checar autorização aqui novamente.
+ */
+export async function listChecklistItems(cardId: string): Promise<ChecklistItemEntry[]> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("checklist_items")
+    .select("id, card_id, title, is_done, position, created_by, created_at")
+    .eq("card_id", cardId)
+    .order("position", { ascending: true })
+    .order("created_at", { ascending: true });
+
+  if (error || !data) {
+    return [];
+  }
+
+  return (
+    data as {
+      id: string;
+      card_id: string;
+      title: string;
+      is_done: boolean;
+      position: number;
+      created_by: string | null;
+      created_at: string;
+    }[]
+  ).map((row) => ({
+    id: row.id,
+    cardId: row.card_id,
+    title: row.title,
+    isDone: row.is_done,
+    position: row.position,
+    createdBy: row.created_by,
+    createdAt: row.created_at,
+  }));
 }
