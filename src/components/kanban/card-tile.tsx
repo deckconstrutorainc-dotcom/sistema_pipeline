@@ -17,6 +17,7 @@ import {
   User as UserIcon,
 } from "lucide-react";
 
+import { CardActionsMenu } from "@/components/kanban/card-actions-menu";
 import { AvatarStack } from "@/components/ui/avatar";
 import { Tooltip } from "@/components/ui/tooltip";
 import { getLabelStyle } from "@/lib/phase-colors";
@@ -30,6 +31,10 @@ interface CardTileProps {
   labelsById: Map<string, LabelSummary>;
   /** Fase atual — usada só para avaliar o SLA. */
   phase?: PhaseSummary;
+  /** Todas as fases do pipe, para o submenu "Mover para". */
+  phases?: PhaseSummary[];
+  currentUserId?: string | null;
+  onActionError?: (message: string) => void;
   isDragOverlay?: boolean;
 }
 
@@ -93,6 +98,9 @@ export function CardTile({
   pipeId,
   labelsById,
   phase,
+  phases,
+  currentUserId,
+  onActionError,
   isDragOverlay = false,
 }: CardTileProps) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
@@ -151,7 +159,22 @@ export function CardTile({
         >
           {card.title}
         </Link>
-        <span className="tabular shrink-0 text-ui-2xs text-muted-foreground">#{card.number}</span>
+        <div className="flex shrink-0 items-center gap-0.5">
+          <span className="tabular text-ui-2xs text-muted-foreground">#{card.number}</span>
+          {phases && !isDragOverlay ? (
+            <CardActionsMenu
+              cardId={card.id}
+              pipeId={pipeId}
+              currentPhaseId={card.currentPhaseId}
+              phases={phases}
+              currentUserId={currentUserId ?? null}
+              isAssignedToMe={
+                currentUserId ? card.assignees.some((a) => a.id === currentUserId) : false
+              }
+              onError={onActionError}
+            />
+          ) : null}
+        </div>
       </div>
 
       {labels.length > 0 ? (

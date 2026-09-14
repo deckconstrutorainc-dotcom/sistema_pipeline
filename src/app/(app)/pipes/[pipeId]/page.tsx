@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
 import { cn } from "@/lib/utils";
-import { hasOrgRole, requireActiveOrganization } from "@/lib/auth/session";
+import { hasOrgRole, requireActiveOrganization, requireAuth } from "@/lib/auth/session";
 import { listOrganizationMembersForAssignment } from "@/server/queries/organizations";
 import { getPipeBoardData } from "@/server/queries/pipes";
 
@@ -18,6 +18,8 @@ interface PipePageProps {
 export default async function PipeKanbanPage({ params }: PipePageProps) {
   const { pipeId } = await params;
   const organization = await requireActiveOrganization();
+  // `requireAuth` é envolvida em React.cache() — não custa round-trip novo.
+  const user = await requireAuth();
 
   const board = await getPipeBoardData(pipeId);
 
@@ -85,6 +87,7 @@ export default async function PipeKanbanPage({ params }: PipePageProps) {
           initialCards={board.cards}
           labels={board.labels}
           canManagePhases={canManagePhases}
+          currentUserId={user.id}
         />
       )}
     </div>

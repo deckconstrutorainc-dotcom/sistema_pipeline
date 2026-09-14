@@ -4,20 +4,23 @@ import { AddCommentForm } from "@/components/forms/add-comment-form";
 import { SendEmailForm } from "@/components/forms/send-email-form";
 import { GenerateDocumentButton } from "@/components/forms/generate-document-button";
 import { TriggerAiRunForm } from "@/components/forms/trigger-ai-run-form";
+import { CardAssigneesPanel } from "@/components/cards/card-assignees-panel";
 import { CardConnectionsSection } from "@/components/cards/card-connections-section";
+import { CardDueDatePanel } from "@/components/cards/card-due-date-panel";
+import { CardLabelsPanel } from "@/components/cards/card-labels-panel";
 import { ChecklistSection } from "@/components/cards/checklist-section";
+import { EditableField, EditableTitle } from "@/components/cards/editable-field";
 import { MovePhasePanel } from "@/components/cards/move-phase-panel";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { requireActiveOrganization } from "@/lib/auth/session";
-import { getLabelStyle } from "@/lib/phase-colors";
 import { getDueStatus } from "@/lib/validation/cards";
 import { listAiAgents } from "@/server/actions/ai-agents";
 import { listAiRunsForCard } from "@/server/actions/ai-runs";
 import { getCardDetail, listChecklistItems } from "@/server/queries/cards";
 import { listDocumentTemplatesForPipe, listGeneratedDocumentsForCard } from "@/server/queries/documents";
 import { getEmailThreadsForCard } from "@/server/queries/email";
-import { listProfilesByIds } from "@/server/queries/organizations";
+import { listOrganizationMembersForAssignment } from "@/server/queries/organizations";
 import { getPipeBoardData } from "@/server/queries/pipes";
 
 const aiRunStatusLabels: Record<string, string> = {
@@ -72,7 +75,7 @@ export default async function CardDetailPage({ params }: CardPageProps) {
   const organization = await requireActiveOrganization();
 
   const [card, board] = await Promise.all([getCardDetail(cardId), getPipeBoardData(pipeId)]);
-  const [emailThreads, documentTemplates, generatedDocuments, aiAgents, aiRuns, checklistItems, assigneeProfiles] =
+  const [emailThreads, documentTemplates, generatedDocuments, aiAgents, aiRuns, checklistItems, members] =
     card
       ? await Promise.all([
           getEmailThreadsForCard(card.id),
@@ -81,11 +84,11 @@ export default async function CardDetailPage({ params }: CardPageProps) {
           listAiAgents(organization.id),
           listAiRunsForCard(card.id),
           listChecklistItems(card.id),
-          listProfilesByIds(card.assigneeIds),
+          // Todos os membros atribuíveis, não apenas os já responsáveis: o
+          // painel precisa da lista completa para oferecer quem adicionar.
+          listOrganizationMembersForAssignment(organization.id),
         ])
       : [[], [], [], [], [], [], []];
-
-  const assigneeNameById = new Map(assigneeProfiles.map((p) => [p.id, p.fullName]));
 
   const availableAiAgents = aiAgents.filter(
     (agent) => agent.isActive && (agent.pipeId === null || agent.pipeId === pipeId),
@@ -107,12 +110,21 @@ export default async function CardDetailPage({ params }: CardPageProps) {
   }
 
   const dueStatus = getDueStatus(card.dueDate);
-  const labelsById = new Map(board.labels.map((l) => [l.id, l]));
-  const cardFields = board.fields.filter((f) => !f.isArchived).map((f) => ({
+
+  // `FieldSummary` completo (com `options`), necessário para a edição inline.
+  const activeFields = board.fields.filter((f) => !f.isArchived);
+
+  // Forma reduzida exigida por `CardConnectionsSection`.
+  const cardFields = activeFields.map((f) => ({
     fieldId: f.id,
     label: f.label,
     type: f.type,
   }));
+
+  // Card arquivado ou concluído vira somente leitura. A permissão de escrita
+  // em si é decidida pela RLS no servidor — aqui é só a dica visual; se a
+  // política negar, a action devolve erro e a UI reverte.
+  const canEditCard = !card.isArchived && !board.pipe.isArchived;
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -121,9 +133,17 @@ export default async function CardDetailPage({ params }: CardPageProps) {
           <Link href={`/pipes/${pipeId}`} className="text-sm text-muted-foreground hover:underline">
             {card.pipeName}
           </Link>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            #{card.number} {card.title}
-          </h1>
+          <div className="flex items-baseline gap-2">
+            <span className="tabular shrink-0 text-ui-md font-medium text-muted-foreground">
+              #{card.number}
+            </span>
+            <EditableTitle
+              cardId={card.id}
+              pipeId={pipeId}
+              title={card.title}
+              readOnly={!canEditCard}
+            />
+          </div>
           {dueStatus === "overdue" || dueStatus === "due_soon" ? (
             <Badge variant={dueStatus === "overdue" ? "destructive" : "warning"}>
               {dueStatus === "overdue" ? "Atrasado" : "Vence em breve"}
@@ -158,16 +178,23 @@ export default async function CardDetailPage({ params }: CardPageProps) {
 
           <TabsContent value="form" className="space-y-6">
             <section className="space-y-2">
-              <h2 className="text-sm font-semibold">Campos</h2>
-              {board.fields.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Este pipe não possui campos configurados.</p>
+              <h2 className="text-ui-md font-semibold">Campos</h2>
+              {activeFields.length === 0 ? (
+                <p className="text-ui-sm text-muted-foreground">
+                  Este pipe não possui campos configurados.
+                </p>
               ) : (
-                <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                  {cardFields.map((field) => (
-                    <div key={field.fieldId} className="space-y-0.5">
-                      <dt className="text-xs text-muted-foreground">{field.label}</dt>
-                      <dd className="text-sm">{formatFieldValue(card.fieldValues[field.fieldId])}</dd>
-                    </div>
+                <dl className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {activeFields.map((field) => (
+                    <EditableField
+                      key={field.id}
+                      cardId={card.id}
+                      pipeId={pipeId}
+                      field={field}
+                      value={card.fieldValues[field.id]}
+                      display={formatFieldValue(card.fieldValues[field.id])}
+                      readOnly={!canEditCard}
+                    />
                   ))}
                 </dl>
               )}
@@ -362,49 +389,38 @@ export default async function CardDetailPage({ params }: CardPageProps) {
         </section>
 
         <section className="space-y-2">
-          <h2 className="text-sm font-semibold">Responsáveis</h2>
-          {card.assigneeIds.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nenhum responsável atribuído.</p>
-          ) : (
-            <ul className="space-y-1 text-sm">
-              {card.assigneeIds.map((id) => (
-                <li key={id}>{assigneeNameById.get(id) ?? "Usuário removido"}</li>
-              ))}
-            </ul>
-          )}
+          <h2 className="text-ui-md font-semibold">Responsáveis</h2>
+          <CardAssigneesPanel
+            cardId={card.id}
+            pipeId={pipeId}
+            assigneeIds={card.assigneeIds}
+            members={members}
+            readOnly={!canEditCard}
+          />
         </section>
 
         <section className="space-y-2">
-          <h2 className="text-sm font-semibold">Labels</h2>
-          {card.labelIds.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nenhuma label aplicada.</p>
-          ) : (
-            <div className="flex flex-wrap gap-1">
-              {card.labelIds.map((id) => {
-                const label = labelsById.get(id);
-                if (!label) return null;
-                return (
-                  <span
-                    key={id}
-                    className="rounded border px-1.5 py-px text-ui-xs font-medium"
-                    style={getLabelStyle(label.color)}
-                  >
-                    {label.name}
-                  </span>
-                );
-              })}
-            </div>
-          )}
+          <h2 className="text-ui-md font-semibold">Etiquetas</h2>
+          <CardLabelsPanel
+            cardId={card.id}
+            pipeId={pipeId}
+            labelIds={card.labelIds}
+            labels={board.labels}
+            readOnly={!canEditCard}
+          />
         </section>
 
-        {dueStatus !== "none" ? (
-          <section className="space-y-2">
-            <h2 className="text-sm font-semibold">Prazo</h2>
-            <p className="text-sm">
-              {card.dueDate ? new Date(card.dueDate).toLocaleString("pt-BR") : "—"}
-            </p>
-          </section>
-        ) : null}
+        {/* Sempre visível: sem isso não havia como DEFINIR um prazo, só ver
+            um que já existisse. */}
+        <section className="space-y-2">
+          <h2 className="text-ui-md font-semibold">Prazo</h2>
+          <CardDueDatePanel
+            cardId={card.id}
+            pipeId={pipeId}
+            dueDate={card.dueDate}
+            readOnly={!canEditCard}
+          />
+        </section>
       </aside>
     </div>
   );

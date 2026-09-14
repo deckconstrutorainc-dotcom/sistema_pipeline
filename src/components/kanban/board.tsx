@@ -16,6 +16,8 @@ interface KanbanBoardProps {
   initialCards: CardSummary[];
   labels: LabelSummary[];
   canManagePhases?: boolean;
+  /** Habilita "Atribuir a mim" no menu de ações do card. */
+  currentUserId?: string | null;
 }
 
 export function KanbanBoard({
@@ -24,6 +26,7 @@ export function KanbanBoard({
   initialCards,
   labels,
   canManagePhases = false,
+  currentUserId = null,
 }: KanbanBoardProps) {
   const router = useRouter();
   const [cards, setCards] = useState(initialCards);
@@ -108,10 +111,13 @@ export function KanbanBoard({
               <KanbanColumn
                 key={phase.id}
                 phase={phase}
+                phases={phases}
                 cards={cardsByPhase.get(phase.id) ?? []}
                 pipeId={pipeId}
                 labelsById={labelsById}
                 canManagePhases={canManagePhases}
+                currentUserId={currentUserId}
+                onActionError={setError}
               />
             ))}
           </div>

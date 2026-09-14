@@ -1,22 +1,11 @@
-import Link from "next/link";
-
 import { MobileNav } from "@/components/layout/mobile-nav";
 import { OrgSwitcher } from "@/components/layout/org-switcher";
+import { Sidebar } from "@/components/layout/sidebar";
+import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { flatNavigation } from "@/lib/navigation";
 import { getActiveOrganization, listUserOrganizations, requireAuth } from "@/lib/auth/session";
 import { signOut } from "@/server/actions/auth";
-
-const mainNavItems = [
-  { label: "Dashboard", href: "/dashboard" },
-  { label: "Pipes", href: "/pipes" },
-  { label: "Databases", href: "/databases" },
-  { label: "Tasks", href: "/tasks" },
-  { label: "Reports", href: "/reports" },
-  { label: "Dashboards", href: "/dashboards" },
-  { label: "Interfaces", href: "/interfaces" },
-  { label: "Execuções de IA", href: "/ai-runs" },
-  { label: "Settings", href: "/settings/members" },
-];
 
 export default async function AppLayout({
   children,
@@ -28,39 +17,49 @@ export default async function AppLayout({
   const activeOrganization = await getActiveOrganization();
 
   return (
-    <div className="flex min-h-screen flex-col">
-      {/* TODO M7+: Sidebar esquerda persistente (layout final ainda como topbar horizontal). */}
-      <header className="relative flex items-center justify-between gap-2 border-b bg-background px-4 py-3 sm:px-6">
-        <div className="flex items-center gap-6">
-          <span className="text-sm font-semibold tracking-tight">Koryn Task</span>
-          {/* Barra horizontal completa: só cabe a partir de `md`. Em telas
-              menores, os mesmos links ficam disponíveis via <MobileNav>. */}
-          <nav className="hidden items-center gap-4 text-sm text-muted-foreground md:flex">
-            {mainNavItems.map((item) => (
-              <Link key={item.href} href={item.href} className="hover:text-foreground">
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-        </div>
-        <div className="flex items-center gap-2 sm:gap-4">
-          {organizations.length > 1 && activeOrganization ? (
-            <OrgSwitcher organizations={organizations} activeOrganizationId={activeOrganization.id} />
-          ) : activeOrganization ? (
-            <span className="hidden text-sm text-muted-foreground sm:inline">
-              {activeOrganization.name}
+    <div className="flex min-h-screen">
+      {/* Sidebar persistente a partir de `lg`; abaixo disso a navegação vive
+          no menu compacto da topbar. */}
+      <Sidebar />
+
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header className="sticky top-0 z-30 flex h-12 shrink-0 items-center justify-between gap-2 border-b bg-card px-3 sm:px-4">
+          <div className="flex min-w-0 items-center gap-2">
+            <MobileNav items={flatNavigation} />
+            <span className="truncate text-ui-md font-semibold tracking-tight lg:hidden">
+              Koryn Task
             </span>
-          ) : null}
-          <span className="hidden text-sm text-muted-foreground sm:inline">{user.email}</span>
-          <form action={signOut}>
-            <Button type="submit" variant="outline" size="sm">
-              Sair
-            </Button>
-          </form>
-          <MobileNav items={mainNavItems} />
-        </div>
-      </header>
-      <main className="flex-1 p-3 sm:p-4 lg:p-5">{children}</main>
+          </div>
+
+          <div className="flex shrink-0 items-center gap-2">
+            {organizations.length > 1 && activeOrganization ? (
+              <OrgSwitcher
+                organizations={organizations}
+                activeOrganizationId={activeOrganization.id}
+              />
+            ) : activeOrganization ? (
+              <span className="hidden text-ui-sm text-muted-foreground sm:inline">
+                {activeOrganization.name}
+              </span>
+            ) : null}
+
+            <div className="flex items-center gap-1.5">
+              <Avatar name={user.email ?? null} seed={user.id} size="sm" />
+              <span className="hidden max-w-40 truncate text-ui-sm text-muted-foreground lg:inline">
+                {user.email}
+              </span>
+            </div>
+
+            <form action={signOut}>
+              <Button type="submit" variant="outline" size="sm">
+                Sair
+              </Button>
+            </form>
+          </div>
+        </header>
+
+        <main className="flex-1 p-3 sm:p-4 lg:p-5">{children}</main>
+      </div>
     </div>
   );
 }

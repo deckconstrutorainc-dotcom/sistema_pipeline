@@ -4,6 +4,7 @@ import { Mic, Square } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
+import { FieldInput } from "@/components/forms/field-input";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogBody, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -189,7 +190,7 @@ export function CreateCardForm({ pipeId, fields, requiredFieldIds, members }: Cr
                         {field.label}
                         {requiredSet.has(field.id) ? " *" : ""}
                       </Label>
-                      <CardFieldInput
+                      <FieldInput
                         field={field}
                         value={fieldValues[field.id]}
                         onChange={(value) => setFieldValue(field.id, value)}
@@ -422,134 +423,4 @@ function blobToBase64(blob: Blob): Promise<string> {
     reader.onerror = () => reject(new Error("Falha ao ler o áudio gravado."));
     reader.readAsDataURL(blob);
   });
-}
-
-interface CardFieldInputProps {
-  field: FieldSummary;
-  value: unknown;
-  onChange: (value: unknown) => void;
-}
-
-/** Renderização por tipo de campo, mesmo padrão de `record-fields-form.tsx`
- * (M4) adaptado ao formato de `FieldSummary` (opções já vêm como array, sem
- * o `config.options` usado pelos campos de database). */
-function CardFieldInput({ field, value, onChange }: CardFieldInputProps) {
-  const id = `card-field-${field.id}`;
-
-  switch (field.type) {
-    case "long_text":
-      return (
-        <textarea
-          id={id}
-          className="min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-          value={typeof value === "string" ? value : ""}
-          onChange={(event) => onChange(event.target.value)}
-        />
-      );
-    case "number":
-    case "currency":
-      return (
-        <Input
-          id={id}
-          type="number"
-          value={typeof value === "number" ? value : ""}
-          onChange={(event) => onChange(event.target.value === "" ? null : Number(event.target.value))}
-        />
-      );
-    case "date":
-      return (
-        <Input
-          id={id}
-          type="date"
-          value={typeof value === "string" ? value.slice(0, 10) : ""}
-          onChange={(event) => onChange(event.target.value ? new Date(event.target.value).toISOString() : null)}
-        />
-      );
-    case "datetime":
-      return (
-        <Input
-          id={id}
-          type="datetime-local"
-          value={typeof value === "string" ? value.slice(0, 16) : ""}
-          onChange={(event) => onChange(event.target.value ? new Date(event.target.value).toISOString() : null)}
-        />
-      );
-    case "checkbox":
-      return (
-        <input
-          id={id}
-          type="checkbox"
-          checked={value === true}
-          onChange={(event) => onChange(event.target.checked)}
-        />
-      );
-    case "email":
-      return (
-        <Input
-          id={id}
-          type="email"
-          value={typeof value === "string" ? value : ""}
-          onChange={(event) => onChange(event.target.value)}
-        />
-      );
-    case "phone":
-      return (
-        <Input
-          id={id}
-          type="tel"
-          value={typeof value === "string" ? value : ""}
-          onChange={(event) => onChange(event.target.value)}
-        />
-      );
-    case "single_select":
-      return (
-        <select
-          id={id}
-          className="h-10 w-full rounded-md border border-input bg-background px-2 text-sm"
-          value={typeof value === "string" ? value : ""}
-          onChange={(event) => onChange(event.target.value || null)}
-        >
-          <option value="">Selecione...</option>
-          {field.options.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-      );
-    case "multi_select": {
-      const selected = Array.isArray(value) ? (value as string[]) : [];
-      return (
-        <select
-          id={id}
-          multiple
-          className="w-full rounded-md border border-input bg-background px-2 py-1 text-sm"
-          value={selected}
-          onChange={(event) => onChange(Array.from(event.target.selectedOptions).map((opt) => opt.value))}
-        >
-          {field.options.map((opt) => (
-            <option key={opt.value} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-      );
-    }
-    case "user":
-    case "attachment":
-      return (
-        <p className="text-xs text-muted-foreground">
-          Este tipo de campo pode ser preenchido depois, na página do card.
-        </p>
-      );
-    case "short_text":
-    default:
-      return (
-        <Input
-          id={id}
-          value={typeof value === "string" ? value : ""}
-          onChange={(event) => onChange(event.target.value)}
-        />
-      );
-  }
 }

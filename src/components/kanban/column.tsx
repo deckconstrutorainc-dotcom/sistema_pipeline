@@ -13,13 +13,26 @@ import type { CardSummary, LabelSummary, PhaseSummary } from "@/server/queries/p
 
 interface ColumnProps {
   phase: PhaseSummary;
+  /** Todas as fases do pipe, para o submenu "Mover para" do card. */
+  phases: PhaseSummary[];
   cards: CardSummary[];
   pipeId: string;
   labelsById: Map<string, LabelSummary>;
   canManagePhases: boolean;
+  currentUserId?: string | null;
+  onActionError?: (message: string) => void;
 }
 
-export function KanbanColumn({ phase, cards, pipeId, labelsById, canManagePhases }: ColumnProps) {
+export function KanbanColumn({
+  phase,
+  phases,
+  cards,
+  pipeId,
+  labelsById,
+  canManagePhases,
+  currentUserId,
+  onActionError,
+}: ColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id: phase.id, data: { phaseId: phase.id } });
   const color = getPhaseColor(phase.color);
 
@@ -101,6 +114,9 @@ export function KanbanColumn({ phase, cards, pipeId, labelsById, canManagePhases
               pipeId={pipeId}
               labelsById={labelsById}
               phase={phase}
+              phases={phases}
+              currentUserId={currentUserId}
+              onActionError={onActionError}
             />
           ))
         )}
