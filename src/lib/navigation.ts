@@ -19,8 +19,11 @@ import {
  * iguais para coisas diferentes. Aqui os itens são agrupados por frequência
  * de uso e nomeados em pt-BR.
  *
- * As rotas permanecem as existentes: renomear URLs é uma mudança à parte,
- * com redirecionamentos, e não se mistura com o redesenho visual.
+ * CONVENÇÃO (decidida em 14/09/2026): rótulos em pt-BR, **URLs em inglês**.
+ * `/dashboard`, `/pipes`, `/tasks` etc. permanecem como estão — não as
+ * traduza. Rotas em inglês são estáveis, combinam com os nomes de tabela e
+ * de rota do resto do código, e traduzi-las exigiria redirecionamentos
+ * permanentes sem nenhum ganho para o usuário, que navega pelo menu.
  */
 
 export interface NavItem {

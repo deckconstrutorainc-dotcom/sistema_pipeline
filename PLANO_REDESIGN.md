@@ -70,8 +70,8 @@ criado. Concluída.
 - Sidebar fixa com ícones, agrupada por frequência de uso, tudo em pt-BR
 - "Dashboard" vs "Dashboards" resolvido pela renomeação para "Início" e
   "Indicadores"
-- Pendente: renomear as URLs para pt-BR (exige redirecionamentos e ajuste
-  dos testes E2E — mudança à parte)
+- **URLs permanecem em inglês** (decidido em 14/09/2026): rótulos em pt-BR,
+  rotas em inglês. Não traduzir `/dashboard`, `/pipes`, `/tasks`.
 - Pendente: favoritos de pipe na sidebar
 
 ### Fase 4 — Formulários, selects, tabelas, textareas, checkboxes
