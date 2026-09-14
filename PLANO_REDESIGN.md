@@ -58,10 +58,21 @@ A tela do card é um `<dl>` somente-leitura. Um pipe sem fases não oferece como
 - Menu de contexto no card — liga as actions órfãs
 - Backend: contagem de comentários/checklist + preparo de paginação
 
-### Fase 3 — Sidebar e navegação
+### Fase 2.5 — Edição de cards (inserida)
+Antecipada por ser mais grave que o visual: o card era imutável depois de
+criado. Concluída.
+- Campos, título e prazo editáveis no lugar
+- Responsáveis e etiquetas com adicionar/remover
+- Menu de ações no cartão do quadro
+- `field-input.tsx` compartilhado entre criação e edição
+
+### Fase 3 — Sidebar e navegação — concluída
 - Sidebar fixa com ícones, agrupada por frequência de uso, tudo em pt-BR
-- Resolver "Dashboard" vs "Dashboards" e a duplicação Reports/Dashboards
-- Favoritos de pipe
+- "Dashboard" vs "Dashboards" resolvido pela renomeação para "Início" e
+  "Indicadores"
+- Pendente: renomear as URLs para pt-BR (exige redirecionamentos e ajuste
+  dos testes E2E — mudança à parte)
+- Pendente: favoritos de pipe na sidebar
 
 ### Fase 4 — Formulários, selects, tabelas, textareas, checkboxes
 - Migrar HTML cru: 19 `<select>`, 13 `<textarea>`, 8 `checkbox`, 6 `<table>`
