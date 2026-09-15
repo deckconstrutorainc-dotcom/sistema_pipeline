@@ -32,30 +32,61 @@ const highlights = [
  * vitrine, não uma tela de trabalho. Por isso as cores vêm escritas aqui, e
  * não dos tokens do design system.
  *
- * O efeito de grade com brilho seguindo o cursor é puro CSS: o container
- * grava a posição do mouse em duas custom properties e cada cartão usa um
- * `radial-gradient` ancorado nelas. Sem JavaScript, sem re-render.
+ * O efeito de lanterna cobre a PÁGINA INTEIRA: a posição do cursor é gravada
+ * em duas custom properties no elemento raiz, e as camadas de fundo usam
+ * essas variáveis como centro de um `radial-gradient`. Como só as variáveis
+ * mudam, o navegador repinta sem recalcular layout e sem re-render do React.
  */
 export default function HomePage() {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#0b0d12] text-slate-200">
-      {/* Grade de fundo, esmaecida nas bordas. */}
+    <div
+      id="landing"
+      className="relative min-h-screen overflow-hidden bg-[#0b0d12] text-slate-200"
+    >
+      {/* Camada 1 — grade base, sempre visível, bem fraca. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-[0.07]"
+        className="pointer-events-none fixed inset-0 opacity-[0.045]"
         style={{
           backgroundImage:
             "linear-gradient(to right, #94a3b8 1px, transparent 1px), linear-gradient(to bottom, #94a3b8 1px, transparent 1px)",
-          backgroundSize: "56px 56px",
-          maskImage: "radial-gradient(ellipse 80% 60% at 50% 40%, #000 40%, transparent 100%)",
-          WebkitMaskImage: "radial-gradient(ellipse 80% 60% at 50% 40%, #000 40%, transparent 100%)",
+          backgroundSize: "52px 52px",
         }}
       />
 
-      {/* Halo azul difuso atrás do título. */}
+      {/* Camada 2 — a mesma grade, muito mais forte, revelada só num círculo
+          ao redor do cursor. É o que dá a sensação de lanterna sobre a
+          malha. */}
       <div
         aria-hidden
-        className="pointer-events-none absolute left-1/2 top-[-12rem] size-[38rem] -translate-x-1/2 rounded-full opacity-20 blur-[120px]"
+        // Sem controle de opacidade: a própria máscara já deixa tudo
+        // invisível enquanto --mx/--my estão fora da tela (-999px).
+        className="pointer-events-none fixed inset-0"
+        style={{
+          backgroundImage:
+            "linear-gradient(to right, #7aa2ff 1px, transparent 1px), linear-gradient(to bottom, #7aa2ff 1px, transparent 1px)",
+          backgroundSize: "52px 52px",
+          maskImage:
+            "radial-gradient(320px circle at var(--mx, -999px) var(--my, -999px), #000 0%, rgba(0,0,0,0.35) 45%, transparent 75%)",
+          WebkitMaskImage:
+            "radial-gradient(320px circle at var(--mx, -999px) var(--my, -999px), #000 0%, rgba(0,0,0,0.35) 45%, transparent 75%)",
+        }}
+      />
+
+      {/* Camada 3 — brilho difuso que acompanha o cursor. */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0"
+        style={{
+          background:
+            "radial-gradient(560px circle at var(--mx, -999px) var(--my, -999px), rgba(47,107,255,0.10), rgba(18,184,166,0.05) 35%, transparent 65%)",
+        }}
+      />
+
+      {/* Halo fixo atrás do título, independente do cursor. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute left-1/2 top-[-14rem] size-[40rem] -translate-x-1/2 rounded-full opacity-20 blur-[130px]"
         style={{ background: "radial-gradient(circle, #2f6bff 0%, #12b8a6 55%, transparent 70%)" }}
       />
 
@@ -107,34 +138,21 @@ export default function HomePage() {
           </div>
         </header>
 
-        {/* `group/grid` + as custom properties: o brilho de todos os cartões
-            acompanha o mesmo cursor, como se fosse uma lanterna sobre a
-            grade inteira. */}
-        <ul className="group/grid grid gap-3 sm:grid-cols-2">
+        <ul className="grid gap-3 sm:grid-cols-2">
           {highlights.map((item) => (
             <li key={item.title}>
-              <article className="group/card relative h-full overflow-hidden rounded-xl border border-white/[0.08] bg-white/[0.02] p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-white/[0.16] hover:bg-white/[0.04] hover:shadow-[0_8px_40px_-12px_rgba(47,107,255,0.35)]">
-                {/* Brilho que segue o cursor dentro do cartão. */}
+              <article className="group/card relative h-full overflow-hidden rounded-xl border border-white/[0.08] bg-white/[0.02] p-5 backdrop-blur-[2px] transition-all duration-300 hover:-translate-y-0.5 hover:border-white/[0.18] hover:bg-white/[0.045] hover:shadow-[0_10px_44px_-14px_rgba(47,107,255,0.45)]">
+                {/* Brilho interno no hover. Fica centralizado no cartão, e
+                    não no cursor: --mx/--my estão em coordenadas de tela,
+                    que dentro de um elemento posicionado apontariam para o
+                    lugar errado. A lanterna global, essa sim, segue o mouse
+                    e passa por cima. */}
                 <span
                   aria-hidden
-                  className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover/card:opacity-100"
+                  className="pointer-events-none absolute inset-0 rounded-xl opacity-0 transition-opacity duration-300 group-hover/card:opacity-100"
                   style={{
                     background:
-                      "radial-gradient(420px circle at var(--x, 50%) var(--y, 50%), rgba(47,107,255,0.10), transparent 42%)",
-                  }}
-                />
-                {/* Quadriculado que só aparece no hover. */}
-                <span
-                  aria-hidden
-                  className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover/card:opacity-[0.10]"
-                  style={{
-                    backgroundImage:
-                      "linear-gradient(to right, #cbd5e1 1px, transparent 1px), linear-gradient(to bottom, #cbd5e1 1px, transparent 1px)",
-                    backgroundSize: "22px 22px",
-                    maskImage:
-                      "radial-gradient(240px circle at var(--x, 50%) var(--y, 50%), #000 10%, transparent 70%)",
-                    WebkitMaskImage:
-                      "radial-gradient(240px circle at var(--x, 50%) var(--y, 50%), #000 10%, transparent 70%)",
+                      "radial-gradient(300px circle at 50% 0%, rgba(122,162,255,0.14), transparent 65%)",
                   }}
                 />
 
@@ -158,20 +176,31 @@ export default function HomePage() {
         </footer>
       </main>
 
-      {/* Rastreia o cursor e grava em --x / --y para os gradientes acima.
-          Um script mínimo, sem estado do React: mover o mouse não pode
-          disparar re-render de componente nenhum. */}
+      {/* Grava a posição do cursor em --mx / --my no elemento raiz, em
+          coordenadas de viewport — que é o sistema das camadas `fixed`.
+          `requestAnimationFrame` limita a escrita a uma por quadro, então
+          mover o mouse rápido não enfileira trabalho. */}
       <script
         dangerouslySetInnerHTML={{
           __html: `
-            document.addEventListener('pointermove', function (e) {
-              var cards = document.querySelectorAll('.group\\\\/card');
-              for (var i = 0; i < cards.length; i++) {
-                var r = cards[i].getBoundingClientRect();
-                cards[i].style.setProperty('--x', (e.clientX - r.left) + 'px');
-                cards[i].style.setProperty('--y', (e.clientY - r.top) + 'px');
+            (function () {
+              var root = document.getElementById('landing');
+              if (!root) return;
+              var x = 0, y = 0, queued = false;
+              function paint() {
+                queued = false;
+                root.style.setProperty('--mx', x + 'px');
+                root.style.setProperty('--my', y + 'px');
               }
-            }, { passive: true });
+              window.addEventListener('pointermove', function (e) {
+                x = e.clientX; y = e.clientY;
+                if (!queued) { queued = true; requestAnimationFrame(paint); }
+              }, { passive: true });
+              window.addEventListener('pointerleave', function () {
+                root.style.setProperty('--mx', '-999px');
+                root.style.setProperty('--my', '-999px');
+              });
+            })();
           `,
         }}
       />
