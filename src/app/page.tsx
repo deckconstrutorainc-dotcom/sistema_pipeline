@@ -2,6 +2,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, BarChart3, KanbanSquare, Timer, Zap } from "lucide-react";
 
+import { CursorSmoke } from "@/components/landing/cursor-smoke";
+
 const highlights = [
   {
     icon: KanbanSquare,
@@ -32,10 +34,13 @@ const highlights = [
  * vitrine, não uma tela de trabalho. Por isso as cores vêm escritas aqui, e
  * não dos tokens do design system.
  *
- * O efeito de lanterna cobre a PÁGINA INTEIRA: a posição do cursor é gravada
- * em duas custom properties no elemento raiz, e as camadas de fundo usam
- * essas variáveis como centro de um `radial-gradient`. Como só as variáveis
- * mudam, o navegador repinta sem recalcular layout e sem re-render do React.
+ * O fundo reage ao cursor em duas frentes, ambas cobrindo a página inteira:
+ *
+ * 1. Lanterna sobre a malha — a posição do mouse é gravada em duas custom
+ *    properties no elemento raiz, e as camadas usam essas variáveis como
+ *    centro de um `radial-gradient`. Só as variáveis mudam, então o
+ *    navegador repinta sem recalcular layout e sem re-render do React.
+ * 2. Rastro de fumaça — `CursorSmoke`, em canvas.
  */
 export default function HomePage() {
   return (
@@ -43,45 +48,38 @@ export default function HomePage() {
       id="landing"
       className="relative min-h-screen overflow-hidden bg-[#0b0d12] text-slate-200"
     >
-      {/* Camada 1 — grade base, sempre visível, bem fraca. */}
+      {/* Camada 1 — malha base, sempre visível, bem fraca. Quadrados de
+          26px: densos o bastante para ler como textura técnica, sem virar
+          ruído. */}
       <div
         aria-hidden
-        className="pointer-events-none fixed inset-0 opacity-[0.045]"
+        className="pointer-events-none fixed inset-0 opacity-[0.05]"
         style={{
           backgroundImage:
             "linear-gradient(to right, #94a3b8 1px, transparent 1px), linear-gradient(to bottom, #94a3b8 1px, transparent 1px)",
-          backgroundSize: "52px 52px",
+          backgroundSize: "26px 26px",
         }}
       />
 
-      {/* Camada 2 — a mesma grade, muito mais forte, revelada só num círculo
-          ao redor do cursor. É o que dá a sensação de lanterna sobre a
-          malha. */}
+      {/* Camada 2 — a mesma malha em azul, revelada só ao redor do cursor.
+          Sem controle de opacidade: a própria máscara deixa tudo invisível
+          enquanto --mx/--my estão fora da tela (-999px). */}
       <div
         aria-hidden
-        // Sem controle de opacidade: a própria máscara já deixa tudo
-        // invisível enquanto --mx/--my estão fora da tela (-999px).
         className="pointer-events-none fixed inset-0"
         style={{
           backgroundImage:
             "linear-gradient(to right, #7aa2ff 1px, transparent 1px), linear-gradient(to bottom, #7aa2ff 1px, transparent 1px)",
-          backgroundSize: "52px 52px",
+          backgroundSize: "26px 26px",
           maskImage:
-            "radial-gradient(320px circle at var(--mx, -999px) var(--my, -999px), #000 0%, rgba(0,0,0,0.35) 45%, transparent 75%)",
+            "radial-gradient(260px circle at var(--mx, -999px) var(--my, -999px), #000 0%, rgba(0,0,0,0.3) 45%, transparent 75%)",
           WebkitMaskImage:
-            "radial-gradient(320px circle at var(--mx, -999px) var(--my, -999px), #000 0%, rgba(0,0,0,0.35) 45%, transparent 75%)",
+            "radial-gradient(260px circle at var(--mx, -999px) var(--my, -999px), #000 0%, rgba(0,0,0,0.3) 45%, transparent 75%)",
         }}
       />
 
-      {/* Camada 3 — brilho difuso que acompanha o cursor. */}
-      <div
-        aria-hidden
-        className="pointer-events-none fixed inset-0"
-        style={{
-          background:
-            "radial-gradient(560px circle at var(--mx, -999px) var(--my, -999px), rgba(47,107,255,0.10), rgba(18,184,166,0.05) 35%, transparent 65%)",
-        }}
-      />
+      {/* Camada 3 — rastro de fumaça em canvas, acompanhando o cursor. */}
+      <CursorSmoke />
 
       {/* Halo fixo atrás do título, independente do cursor. */}
       <div
@@ -90,7 +88,9 @@ export default function HomePage() {
         style={{ background: "radial-gradient(circle, #2f6bff 0%, #12b8a6 55%, transparent 70%)" }}
       />
 
-      <main className="relative mx-auto flex min-h-screen w-full max-w-5xl flex-col justify-center gap-12 px-5 py-16">
+      {/* z-10 explícito: o canvas da fumaça é z-0, e o conteúdo precisa
+          ficar por cima dele em qualquer ordem de empilhamento. */}
+      <main className="relative z-10 mx-auto flex min-h-screen w-full max-w-5xl flex-col justify-center gap-12 px-5 py-16">
         <header className="space-y-6">
           <Image
             src="/koryn-logo-dark.png"
