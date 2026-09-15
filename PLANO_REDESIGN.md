@@ -74,8 +74,12 @@ criado. Concluída.
   rotas em inglês. Não traduzir `/dashboard`, `/pipes`, `/tasks`.
 - Pendente: favoritos de pipe na sidebar
 
-### Fase 4 — Formulários, selects, tabelas, textareas, checkboxes
-- Migrar HTML cru: 19 `<select>`, 13 `<textarea>`, 8 `checkbox`, 6 `<table>`
+### Fase 4 — Formulários, selects, tabelas — concluída
+- 12 `<textarea>` → `<Textarea>`; 5 checkboxes controlados → `<Checkbox>`;
+  19 `<select>` uniformizados; 6 `<table>` → componentes `Table`
+- Componentes novos: `ui/select.tsx`, `ui/table.tsx`, `ui/textarea.tsx`
+- Os `<select>` seguem nativos por usarem `{...register}` do react-hook-form;
+  o Radix Select exigiria `<Controller>` em cada um
 
 ### Fase 5 — Loading, empty states, erros, quick view, performance
 - Skeletons por rota, empty states com ação, toasts
