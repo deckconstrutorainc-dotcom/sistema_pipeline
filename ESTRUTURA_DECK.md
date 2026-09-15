@@ -199,8 +199,28 @@ produtividade por período · % concluídas no prazo · gargalos por fase
 | Dashboard gerencial | `/dashboards` | ✓ |
 | Administração de usuários | `/settings/members` | ✓ |
 | Configurações | `/settings` | ✓ |
+| Notificações | `/notifications` | ✓ sino na topbar + página |
 | **Calendário de prazos** | — | ✗ não existe |
-| **Notificações** | — | ✗ não existe |
+
+### Notificações
+
+O sino da topbar mostra as não lidas e as oito mais recentes; a página
+lista tudo, separando não lidas de anteriores.
+
+Você é avisado quando:
+
+| Evento | Quem recebe |
+|---|---|
+| Foi atribuído a uma atividade | Quem recebeu a atribuição |
+| Comentário novo | Responsáveis e criador, menos quem comentou |
+| Anexo novo | Responsáveis e criador, menos quem anexou |
+| Prazo vence em menos de 24h | Responsáveis e criador |
+| Prazo vencido | Responsáveis e criador, uma vez por dia |
+| Atividade relacionada concluída | Participantes do card vinculado |
+| Automação com aviso | Conforme a automação |
+
+Ninguém é notificado da própria ação. Os avisos de prazo dependem do
+processamento periódico — ver seção 9 sobre a frequência do agendamento.
 
 ---
 
@@ -224,7 +244,6 @@ Estas são lacunas reais, não detalhes de acabamento:
 
 | Lacuna | Impacto | Esforço |
 |---|---|---|
-| **Notificações internas** | Não há tabela nem tela. As automações só registram no console — ninguém é avisado de nada. | ~3 dias |
 | **Calendário de prazos** | Não existe. Prazos só aparecem no card e nos filtros. | ~1,5 dia |
 | **Anexos** | Só grava o nome do arquivo; o upload não está ligado ao armazenamento. Crítico para obra (fotos, notas fiscais). | ~2 dias |
 | **E-mail** | Nenhum e-mail sai do sistema. | ~1 dia |
@@ -233,8 +252,11 @@ Estas são lacunas reais, não detalhes de acabamento:
 | **Filtros no quadro** | O quadro não tem busca nem filtro; a tabela ordena mas não filtra. | ~2 dias |
 | **Reabrir atividade** | Dá para mover de volta arrastando, mas não há ação explícita de "reabrir". | ~0,5 dia |
 
-**Ordem sugerida:** notificações → anexos → prazo da fase → filtros →
-calendário.
+**Ordem sugerida:** anexos → prazo da fase → filtros → calendário.
 
-Sem notificações, o sistema depende de cada um abrir a tela para descobrir
-o que tem para fazer — é a lacuna que mais pesa no uso diário.
+⚠️ **Atenção ao agendamento.** Os avisos de prazo (vence em 24h, vencido)
+dependem do processamento periódico. No plano gratuito da Vercel isso roda
+**uma vez por dia**, de madrugada — ou seja, um prazo que vence às 10h só
+gera aviso no dia seguinte. Configure o `pg_cron` do Supabase para rodar a
+cada 5 minutos (passo 5 do `DEPLOY.md`); sem isso, metade do valor das
+notificações se perde.
