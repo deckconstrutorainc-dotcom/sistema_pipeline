@@ -57,6 +57,11 @@ export function KanbanColumn({
         isOver && "bg-primary/[0.06] ring-2 ring-primary/40",
       )}
     >
+      {/* Barra colorida da fase acima do cabeçalho, como na referência:
+          separa as colunas de relance, mesmo quando várias têm nomes
+          longos e parecidos. */}
+      <div className={cn("mx-1 h-0.5 shrink-0 rounded-full", color.bar)} aria-hidden />
+
       <div className="sticky top-0 z-10 flex items-center justify-between gap-2 rounded-t-lg bg-board/95 px-1 py-2 backdrop-blur-sm">
         <div className="flex min-w-0 items-center gap-1.5">
           {/* Etiqueta com o nome da fase na própria cor — é o que dá a

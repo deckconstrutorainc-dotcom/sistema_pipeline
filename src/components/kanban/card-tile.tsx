@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useDraggable } from "@dnd-kit/core";
 import {
   AlarmClock,
@@ -103,6 +103,7 @@ export function CardTile({
   onActionError,
   isDragOverlay = false,
 }: CardTileProps) {
+  const router = useRouter();
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: card.id,
     data: { cardId: card.id, fromPhaseId: card.currentPhaseId },
@@ -132,19 +133,39 @@ export function CardTile({
   const hasChecklist = card.checklistTotal > 0;
   const checklistComplete = hasChecklist && card.checklistDone === card.checklistTotal;
 
+  function handleClick(event: React.MouseEvent) {
+    // O cartão é arrastável e clicável ao mesmo tempo. Só navega se não
+    // houve arraste (o dnd-kit só marca `isDragging` depois de 6px de
+    // movimento) e se o clique não veio de um controle interno — menu de
+    // ações, por exemplo.
+    if (isDragging || isDragOverlay) return;
+    if ((event.target as HTMLElement).closest("[data-no-card-nav]")) return;
+    router.push(`/pipes/${pipeId}/cards/${card.id}`);
+  }
+
   return (
     <div
       ref={setNodeRef}
       style={style}
       {...attributes}
       {...listeners}
+      onClick={handleClick}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          router.push(`/pipes/${pipeId}/cards/${card.id}`);
+        }
+      }}
+      role="link"
+      tabIndex={0}
+      aria-label={`Abrir atividade #${card.number}: ${card.title}`}
       className={cn(
         // `touch-none` (touch-action: none) evita que o gesto de arrastar
         // em touch seja interpretado como rolagem da página pelo
         // navegador — necessário para o drag-and-drop (dnd-kit
         // `PointerSensor`, que já cobre mouse e touch) funcionar bem em
         // celular.
-        "group cursor-grab touch-none space-y-2 rounded-lg border border-tile-border bg-tile p-3 shadow-[0_1px_2px_rgba(16,24,40,0.05)] transition-all hover:-translate-y-px hover:border-border hover:shadow-[0_4px_16px_-4px_rgba(16,24,40,0.12)] active:cursor-grabbing",
+        "group cursor-pointer touch-none space-y-2 rounded-lg border border-tile-border bg-tile p-3 shadow-[0_1px_2px_rgba(16,24,40,0.05)] transition-all hover:-translate-y-px hover:border-primary/40 hover:shadow-[0_4px_16px_-4px_rgba(16,24,40,0.14)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring active:cursor-grabbing",
         (isDragging || isDragOverlay) && "rotate-1 opacity-90 shadow-lg ring-2 ring-ring",
       )}
     >
@@ -158,15 +179,12 @@ export function CardTile({
               aria-hidden
             />
           ) : null}
-          <Link
-            href={`/pipes/${pipeId}/cards/${card.id}`}
-            onClick={(e) => e.stopPropagation()}
-            className="text-ui-md font-semibold leading-snug hover:underline"
-          >
+          <span className="text-ui-md font-semibold leading-snug group-hover:text-primary">
             {card.title}
-          </Link>
+          </span>
         </div>
-        <div className="flex shrink-0 items-center gap-0.5">
+        {/* `data-no-card-nav`: o clique no menu não deve abrir o card. */}
+        <div className="flex shrink-0 items-center gap-0.5" data-no-card-nav>
           <span className="tabular text-ui-2xs text-muted-foreground">#{card.number}</span>
           {phases && !isDragOverlay ? (
             <CardActionsMenu
@@ -184,22 +202,26 @@ export function CardTile({
         </div>
       </div>
 
-      {/* Campos resumidos numa linha só, separados por ponto — o formato
-          "valor · data" do modelo. Duas linhas empilhadas ocupavam altura
-          demais e faziam caber menos cards na coluna. */}
+      {/* Campos com rótulo acima do valor: sem ele, "Normal" ou uma data
+          solta não dizem de que campo se trata. O rótulo fica pequeno e em
+          maiúsculas para manter a hierarquia — o valor é o que se lê. */}
       {card.summaryFields.length > 0 ? (
-        <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-ui-xs text-muted-foreground">
-          {card.summaryFields.map((f, index) => {
+        <dl className="space-y-1.5">
+          {card.summaryFields.map((f) => {
             const Icon = fieldTypeIcons[f.type] ?? Type;
             return (
-              <span key={f.fieldId} className="flex items-center gap-1" title={f.label}>
-                {index > 0 ? <span className="text-muted-foreground/50">·</span> : null}
-                <Icon className="size-3 shrink-0" aria-hidden />
-                <span className="truncate">{formatSummaryFieldValue(f.type, f.value)}</span>
-              </span>
+              <div key={f.fieldId} className="space-y-0.5">
+                <dt className="flex items-center gap-1 text-ui-2xs uppercase tracking-wide text-muted-foreground">
+                  <Icon className="size-3 shrink-0" aria-hidden />
+                  <span className="truncate">{f.label}</span>
+                </dt>
+                <dd className="truncate pl-4 text-ui-sm text-foreground">
+                  {formatSummaryFieldValue(f.type, f.value)}
+                </dd>
+              </div>
             );
           })}
-        </div>
+        </dl>
       ) : null}
 
       {/* Etiquetas como pílulas, separadas do conteúdo por uma divisória —
