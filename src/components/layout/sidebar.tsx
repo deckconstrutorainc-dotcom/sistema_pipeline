@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -101,12 +102,24 @@ export function Sidebar() {
           )}
         >
           <Link href="/dashboard" className="flex items-center gap-2 overflow-hidden">
-            <span className="flex size-6 shrink-0 items-center justify-center rounded bg-primary text-ui-xs font-bold text-primary-foreground">
-              K
-            </span>
-            {!isCollapsed ? (
-              <span className="truncate text-ui-md font-semibold tracking-tight">Koryn Task</span>
-            ) : null}
+            {isCollapsed ? (
+              // Recolhida, só o símbolo K: a logo inteira não caberia em 56px.
+              <Image
+                src="/koryn-symbol.png"
+                alt="Koryn Task"
+                width={264}
+                height={356}
+                className="h-5 w-auto shrink-0"
+              />
+            ) : (
+              <Image
+                src="/koryn-logo.png"
+                alt="Koryn Task"
+                width={960}
+                height={356}
+                className="h-6 w-auto"
+              />
+            )}
           </Link>
         </div>
 
