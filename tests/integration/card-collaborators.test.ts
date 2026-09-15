@@ -120,28 +120,25 @@ describe("Colaborador convidado em card (pglite)", () => {
       )
     ).id;
 
-    // Cards criados pelo admin: a numeração automática faz UPDATE em
-    // `pipes`, cuja policy exige admin — um `member` não consegue criar
-    // card nem no próprio pipe. É o comportamento já existente do sistema,
-    // não algo que este teste esteja exercitando.
+    // Isabele cria os próprios cards: ver card-creation-by-member.test.ts.
     cardA = (
-      await runAsUser(db, adminId, () =>
+      await runAsUser(db, comprasId, () =>
         insertReturning<{ id: string }>(db, "cards", {
           pipe_id: comprasPipeId,
           current_phase_id: phaseOpenId,
           title: "Cotação de esquadrias",
-          created_by: adminId,
+          created_by: comprasId,
         }),
       )
     ).id;
 
     cardB = (
-      await runAsUser(db, adminId, () =>
+      await runAsUser(db, comprasId, () =>
         insertReturning<{ id: string }>(db, "cards", {
           pipe_id: comprasPipeId,
           current_phase_id: phaseOpenId,
           title: "Compra de cimento",
-          created_by: adminId,
+          created_by: comprasId,
         }),
       )
     ).id;

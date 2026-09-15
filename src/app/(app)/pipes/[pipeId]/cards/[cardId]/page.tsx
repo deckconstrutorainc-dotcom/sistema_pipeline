@@ -5,6 +5,7 @@ import { SendEmailForm } from "@/components/forms/send-email-form";
 import { GenerateDocumentButton } from "@/components/forms/generate-document-button";
 import { TriggerAiRunForm } from "@/components/forms/trigger-ai-run-form";
 import { CardAssigneesPanel } from "@/components/cards/card-assignees-panel";
+import { CardChat } from "@/components/cards/card-chat";
 import { CardCollaboratorsPanel } from "@/components/cards/card-collaborators-panel";
 import { CardConnectionsSection } from "@/components/cards/card-connections-section";
 import { CardDueDatePanel } from "@/components/cards/card-due-date-panel";
@@ -14,7 +15,7 @@ import { EditableField, EditableTitle } from "@/components/cards/editable-field"
 import { MovePhasePanel } from "@/components/cards/move-phase-panel";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { requireActiveOrganization } from "@/lib/auth/session";
+import { requireActiveOrganization, requireAuth } from "@/lib/auth/session";
 import { getDueStatus } from "@/lib/validation/cards";
 import { listAiAgents } from "@/server/actions/ai-agents";
 import { listAiRunsForCard } from "@/server/actions/ai-runs";
@@ -22,7 +23,7 @@ import { getCardDetail, listChecklistItems } from "@/server/queries/cards";
 import { listDocumentTemplatesForPipe, listGeneratedDocumentsForCard } from "@/server/queries/documents";
 import { getEmailThreadsForCard } from "@/server/queries/email";
 import { listCardCollaborators } from "@/server/queries/collaborators";
-import { listOrganizationMembersForAssignment } from "@/server/queries/organizations";
+import { listOrganizationMembersForAssignment, listProfilesByIds } from "@/server/queries/organizations";
 import { getPipeBoardData } from "@/server/queries/pipes";
 
 const aiRunStatusLabels: Record<string, string> = {
@@ -75,6 +76,7 @@ function formatFieldValue(value: unknown): string {
 export default async function CardDetailPage({ params }: CardPageProps) {
   const { pipeId, cardId } = await params;
   const organization = await requireActiveOrganization();
+  const user = await requireAuth();
 
   const [card, board] = await Promise.all([getCardDetail(cardId), getPipeBoardData(pipeId)]);
   const [emailThreads, documentTemplates, generatedDocuments, aiAgents, aiRuns, checklistItems, members, collaborators] =
@@ -111,6 +113,15 @@ export default async function CardDetailPage({ params }: CardPageProps) {
       </div>
     );
   }
+
+  // Nomes de quem aparece na tela: autores das mensagens, responsáveis e
+  // convidados. Uma consulta só, em vez de uma por seção.
+  const profiles = await listProfilesByIds([
+    ...card.comments.map((c) => c.authorId),
+    ...card.assigneeIds,
+    ...collaborators.map((c) => c.userId),
+  ]);
+  const nameByUserId = new Map(profiles.map((p) => [p.id, p.fullName]));
 
   const dueStatus = getDueStatus(card.dueDate);
 
@@ -174,7 +185,7 @@ export default async function CardDetailPage({ params }: CardPageProps) {
             <TabsTrigger value="checklist">
               Checklist{checklistItems.length > 0 ? ` (${checklistDone}/${checklistItems.length})` : ""}
             </TabsTrigger>
-            <TabsTrigger value="comments">Comentários</TabsTrigger>
+            <TabsTrigger value="comments">Conversa</TabsTrigger>
             <TabsTrigger value="email">E-mail</TabsTrigger>
             <TabsTrigger value="documents">Documentos</TabsTrigger>
           </TabsList>
@@ -281,22 +292,25 @@ export default async function CardDetailPage({ params }: CardPageProps) {
           </TabsContent>
 
           <TabsContent value="comments">
-            <section className="space-y-2">
-              <h2 className="text-sm font-semibold">Comentários</h2>
-              {card.comments.length === 0 ? (
-                <p className="text-sm text-muted-foreground">Nenhum comentário ainda.</p>
-              ) : (
-                <ul className="space-y-2">
-                  {card.comments.map((comment) => (
-                    <li key={comment.id} className="rounded-md border p-3 text-sm">
-                      <p>{comment.body}</p>
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {new Date(comment.createdAt).toLocaleString("pt-BR")}
-                      </p>
-                    </li>
-                  ))}
-                </ul>
-              )}
+            <section className="space-y-3">
+              <div className="space-y-0.5">
+                <h2 className="text-ui-md font-semibold">Conversa</h2>
+                <p className="text-ui-xs text-muted-foreground">
+                  Histórico de mensagens desta atividade, visível a todos que participam dela.
+                </p>
+              </div>
+
+              <CardChat
+                messages={card.comments.map((comment) => ({
+                  id: comment.id,
+                  body: comment.body,
+                  authorId: comment.authorId,
+                  authorName: nameByUserId.get(comment.authorId) ?? null,
+                  createdAt: comment.createdAt,
+                }))}
+                currentUserId={user.id}
+              />
+
               <AddCommentForm cardId={card.id} pipeId={pipeId} />
             </section>
           </TabsContent>
