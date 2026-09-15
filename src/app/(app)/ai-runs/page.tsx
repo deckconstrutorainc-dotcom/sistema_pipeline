@@ -46,7 +46,7 @@ export default async function AiRunsPage() {
       </div>
 
       {runs.length === 0 ? (
-        <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
+        <div className="rounded-lg border border-dashed bg-card/50 p-8 text-center text-ui-sm text-muted-foreground">
           Nenhuma execução de IA registrada ainda. Dispare uma pela página de um card ou pelos agentes configurados
           em Settings → Agentes de IA.
         </div>

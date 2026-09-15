@@ -75,7 +75,7 @@ export default async function WebhookDeliveriesPage({ params }: WebhookDeliverie
       </div>
 
       {deliveries.length === 0 ? (
-        <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
+        <div className="rounded-lg border border-dashed bg-card/50 p-8 text-center text-ui-sm text-muted-foreground">
           Nenhuma entrega registrada ainda.{" "}
           {webhook.direction === "outbound"
             ? "Uma entrega é criada assim que um evento assinado por este webhook acontece, e processada por /api/automations/process."

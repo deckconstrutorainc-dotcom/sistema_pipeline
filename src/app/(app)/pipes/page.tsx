@@ -1,6 +1,8 @@
+import { Columns3 } from "lucide-react";
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CreatePipeForm } from "@/components/forms/create-pipe-form";
 import { hasOrgRole, requireActiveOrganization } from "@/lib/auth/session";
@@ -25,14 +27,15 @@ export default async function PipesPage() {
       {canManagePipes ? <CreatePipeForm organizationId={organization.id} /> : null}
 
       {pipes.length === 0 ? (
-        <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
-          <p>Nenhum pipe criado ainda.</p>
-          {canManagePipes ? (
-            <p className="text-sm">Use o formulário acima para criar o primeiro pipe.</p>
-          ) : (
-            <p className="text-sm">Peça a um administrador da organização para criar um pipe.</p>
-          )}
-        </div>
+        <EmptyState
+          icon={Columns3}
+          title="Nenhum processo criado ainda"
+          description={
+            canManagePipes
+              ? "Um processo organiza um tipo de demanda em fases — por exemplo Compras: Solicitação, Cotação, Aprovação e Entrega. Use o formulário acima para criar o primeiro."
+              : "Peça a um administrador da organização para criar o primeiro processo."
+          }
+        />
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {pipes.map((pipe) => (

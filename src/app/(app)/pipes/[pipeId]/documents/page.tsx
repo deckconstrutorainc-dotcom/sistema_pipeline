@@ -51,7 +51,7 @@ export default async function PipeDocumentsPage({ params }: DocumentsPageProps) 
       {canManage ? <CreateDocumentTemplateForm organizationId={organization.id} pipeId={pipeId} /> : null}
 
       {templates.length === 0 ? (
-        <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
+        <div className="rounded-lg border border-dashed bg-card/50 p-8 text-center text-ui-sm text-muted-foreground">
           <p>Nenhum template de documento criado ainda.</p>
           {canManage ? (
             <p className="text-sm">Use o formulário acima para criar o primeiro template.</p>

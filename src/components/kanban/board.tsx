@@ -6,6 +6,7 @@ import { DndContext, DragOverlay, PointerSensor, useSensor, useSensors, type Dra
 
 import { CardTile } from "@/components/kanban/card-tile";
 import { KanbanColumn } from "@/components/kanban/column";
+import { useToast } from "@/components/ui/toast";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { moveCard } from "@/server/actions/cards";
 import type { CardSummary, LabelSummary, PhaseSummary } from "@/server/queries/pipes";
@@ -31,7 +32,9 @@ export function KanbanBoard({
   const router = useRouter();
   const [cards, setCards] = useState(initialCards);
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  // Erros viram toast: o aviso inline ficava acima do quadro e podia estar
+  // fora da área visível depois do scroll horizontal das colunas.
+  const { error: showError } = useToast();
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
 
   const labelsById = useMemo(() => new Map(labels.map((l) => [l.id, l])), [labels]);
@@ -60,7 +63,6 @@ export function KanbanBoard({
     if (!card || card.currentPhaseId === targetPhaseId) return;
 
     const previousPhaseId = card.currentPhaseId;
-    setError(null);
 
     // Atualização otimista da UI.
     setCards((prev) =>
@@ -76,7 +78,7 @@ export function KanbanBoard({
       setCards((prev) =>
         prev.map((c) => (c.id === cardId ? { ...c, currentPhaseId: previousPhaseId } : c)),
       );
-      setError(result.error ?? "Não foi possível mover o card.");
+      showError(result.error ?? "Não foi possível mover o card.");
       return;
     }
 
@@ -89,12 +91,6 @@ export function KanbanBoard({
     // para compartilhar o atraso de abertura.
     <TooltipProvider delayDuration={300} skipDelayDuration={150}>
       <div className="space-y-2">
-        {error ? (
-          <div className="rounded-md border border-destructive/50 bg-destructive/10 px-3 py-2 text-ui-sm text-destructive">
-            {error}
-          </div>
-        ) : null}
-
         <DndContext
           sensors={sensors}
           onDragStart={(event) => setActiveCardId(event.active.id as string)}
@@ -117,7 +113,7 @@ export function KanbanBoard({
                 labelsById={labelsById}
                 canManagePhases={canManagePhases}
                 currentUserId={currentUserId}
-                onActionError={setError}
+                onActionError={showError}
               />
             ))}
           </div>

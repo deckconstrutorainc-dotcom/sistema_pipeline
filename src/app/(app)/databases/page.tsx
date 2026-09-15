@@ -1,7 +1,9 @@
+import { Database } from "lucide-react";
 import Link from "next/link";
 
 import { CreateDatabaseForm } from "@/components/forms/create-database-form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { hasOrgRole, requireActiveOrganization } from "@/lib/auth/session";
 import { listDatabases } from "@/server/queries/databases";
 
@@ -26,14 +28,15 @@ export default async function DatabasesPage() {
       {canManageDatabases ? <CreateDatabaseForm organizationId={organization.id} /> : null}
 
       {databases.length === 0 ? (
-        <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
-          <p>Nenhum database criado ainda.</p>
-          {canManageDatabases ? (
-            <p className="text-sm">Use o formulário acima para criar o primeiro database.</p>
-          ) : (
-            <p className="text-sm">Peça a um administrador da organização para criar um database.</p>
-          )}
-        </div>
+        <EmptyState
+          icon={Database}
+          title="Nenhuma base de dados criada"
+          description={
+            canManageDatabases
+              ? "Bases de dados guardam cadastros de apoio reutilizáveis pelos processos — fornecedores, equipamentos, centros de custo. Use o formulário acima para criar a primeira."
+              : "Peça a um administrador da organização para criar a primeira base de dados."
+          }
+        />
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {databases.map((database) => (

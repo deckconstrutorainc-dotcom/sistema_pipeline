@@ -63,7 +63,7 @@ export default async function PortalsPage({ params }: PortalsPageProps) {
       <CreatePortalForm pipeId={pipeId} />
 
       {portalsWithItems.length === 0 ? (
-        <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
+        <div className="rounded-lg border border-dashed bg-card/50 p-8 text-center text-ui-sm text-muted-foreground">
           Nenhum portal criado ainda para este pipe.
         </div>
       ) : (

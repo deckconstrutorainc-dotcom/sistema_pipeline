@@ -1,6 +1,8 @@
+import { ListChecks } from "lucide-react";
 import { CreateTaskForm } from "@/components/forms/create-task-form";
 import { TaskStatusSelect } from "@/components/forms/task-status-select";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/empty-state";
 import { requireActiveOrganization } from "@/lib/auth/session";
 import { getDueStatus } from "@/lib/validation/cards";
 import { listTasks } from "@/server/actions/tasks";
@@ -21,9 +23,11 @@ export default async function TasksPage() {
       <CreateTaskForm organizationId={organization.id} />
 
       {tasks.length === 0 ? (
-        <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
-          Nenhuma tarefa criada ainda.
-        </div>
+        <EmptyState
+          icon={ListChecks}
+          title="Nenhuma tarefa por aqui"
+          description="Tarefas são criadas a partir dos cards dos processos e aparecem aqui quando atribuídas a você."
+        />
       ) : (
         <ul className="space-y-2">
           {tasks.map((task) => {

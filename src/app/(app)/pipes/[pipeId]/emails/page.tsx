@@ -58,7 +58,7 @@ export default async function PipeEmailsPage({ params }: PipeEmailsPageProps) {
       </div>
 
       {threads.length === 0 ? (
-        <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
+        <div className="rounded-lg border border-dashed bg-card/50 p-8 text-center text-ui-sm text-muted-foreground">
           Nenhuma thread de e-mail registrada para os cards deste pipe ainda.
         </div>
       ) : (

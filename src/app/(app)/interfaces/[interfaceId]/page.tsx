@@ -136,7 +136,7 @@ export default async function InterfaceDetailPage({ params }: InterfacePageProps
       </div>
 
       {detail.components.length === 0 ? (
-        <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
+        <div className="rounded-lg border border-dashed bg-card/50 p-8 text-center text-ui-sm text-muted-foreground">
           <p>Nenhum componente configurado ainda.</p>
         </div>
       ) : (

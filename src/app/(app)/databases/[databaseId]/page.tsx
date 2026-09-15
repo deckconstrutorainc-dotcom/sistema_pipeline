@@ -106,7 +106,7 @@ export default async function DatabaseDetailPage({ params, searchParams }: Datab
       </form>
 
       {activeFields.length === 0 ? (
-        <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
+        <div className="rounded-lg border border-dashed bg-card/50 p-8 text-center text-ui-sm text-muted-foreground">
           <p>Este database ainda não possui campos configurados.</p>
           {canManageStructure ? (
             <p className="text-sm">Use &quot;Gerenciar campos&quot; acima para adicionar o primeiro campo.</p>
@@ -115,7 +115,7 @@ export default async function DatabaseDetailPage({ params, searchParams }: Datab
           )}
         </div>
       ) : records.length === 0 ? (
-        <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
+        <div className="rounded-lg border border-dashed bg-card/50 p-8 text-center text-ui-sm text-muted-foreground">
           <p>{q ? "Nenhum registro encontrado para essa busca." : "Nenhum registro criado ainda."}</p>
         </div>
       ) : (

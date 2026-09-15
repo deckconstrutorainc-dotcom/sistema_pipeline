@@ -53,7 +53,7 @@ export default async function AiAgentsSettingsPage() {
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">Agentes configurados</h2>
         {agents.length === 0 ? (
-          <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
+          <div className="rounded-lg border border-dashed bg-card/50 p-8 text-center text-ui-sm text-muted-foreground">
             Nenhum agente de IA configurado ainda.
           </div>
         ) : (
@@ -96,7 +96,7 @@ export default async function AiAgentsSettingsPage() {
           agents={agents.map((a) => ({ id: a.id, name: a.name }))}
         />
         {knowledgeSources.length === 0 ? (
-          <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
+          <div className="rounded-lg border border-dashed bg-card/50 p-8 text-center text-ui-sm text-muted-foreground">
             Nenhuma fonte de conhecimento cadastrada ainda.
           </div>
         ) : (

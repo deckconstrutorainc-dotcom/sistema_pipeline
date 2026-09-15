@@ -77,7 +77,7 @@ function KpiCard({
 
 function EmptyState({ children }: { children: React.ReactNode }) {
   return (
-    <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
+    <div className="rounded-lg border border-dashed bg-card/50 p-6 text-center text-ui-sm text-muted-foreground">
       {children}
     </div>
   );

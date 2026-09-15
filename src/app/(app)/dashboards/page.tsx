@@ -25,7 +25,7 @@ export default async function DashboardsPage() {
       {canManageDashboards ? <CreateDashboardForm organizationId={organization.id} /> : null}
 
       {dashboards.length === 0 ? (
-        <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
+        <div className="rounded-lg border border-dashed bg-card/50 p-8 text-center text-ui-sm text-muted-foreground">
           <p>Nenhum dashboard criado ainda.</p>
           {canManageDashboards ? (
             <p className="text-sm">Use o formulário acima para criar o primeiro dashboard.</p>

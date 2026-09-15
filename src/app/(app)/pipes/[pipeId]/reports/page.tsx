@@ -53,7 +53,7 @@ export default async function PipeReportsPage({ params }: PipeReportsPageProps) 
       </div>
 
       {reports.length === 0 ? (
-        <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
+        <div className="rounded-lg border border-dashed bg-card/50 p-8 text-center text-ui-sm text-muted-foreground">
           <p>Nenhum report escopado a este pipe ainda.</p>
           <p className="text-sm">
             Crie um em{" "}

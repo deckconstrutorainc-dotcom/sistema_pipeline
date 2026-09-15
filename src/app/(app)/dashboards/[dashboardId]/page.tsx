@@ -134,7 +134,7 @@ export default async function DashboardDetailPage({ params }: DashboardPageProps
       {canManage ? <AddWidgetForm dashboardId={detail.dashboard.id} reports={reports} /> : null}
 
       {detail.widgets.length === 0 ? (
-        <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
+        <div className="rounded-lg border border-dashed bg-card/50 p-8 text-center text-ui-sm text-muted-foreground">
           <p>Nenhum widget neste dashboard ainda.</p>
           {canManage ? (
             <p className="text-sm">Use o formulário acima para adicionar o primeiro widget.</p>

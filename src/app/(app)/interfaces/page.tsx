@@ -32,7 +32,7 @@ export default async function InterfacesPage() {
       {canManageInterfaces ? <CreateInterfaceForm organizationId={organization.id} /> : null}
 
       {visibleInterfaces.length === 0 ? (
-        <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
+        <div className="rounded-lg border border-dashed bg-card/50 p-8 text-center text-ui-sm text-muted-foreground">
           <p>Nenhuma interface disponível ainda.</p>
           {canManageInterfaces ? (
             <p className="text-sm">Use o formulário acima para criar a primeira interface.</p>

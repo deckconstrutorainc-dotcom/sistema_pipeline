@@ -52,7 +52,7 @@ export default async function IntegrationsSettingsPage() {
       <CreateIntegrationForm organizationId={organization.id} />
 
       {integrations.length === 0 ? (
-        <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
+        <div className="rounded-lg border border-dashed bg-card/50 p-8 text-center text-ui-sm text-muted-foreground">
           Nenhuma integração configurada ainda.
         </div>
       ) : (

@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, Inbox } from "lucide-react";
 
 import { AvatarStack } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   Table,
   TableBody,
@@ -116,9 +117,11 @@ export function CardsListTable({ pipeId, cards, phases, labels }: CardsListTable
 
   if (cards.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed p-8 text-center text-muted-foreground">
-        Nenhum card neste pipe ainda.
-      </div>
+      <EmptyState
+        icon={Inbox}
+        title="Nenhum card neste processo"
+        description="Cards criados no quadro aparecem aqui, em formato de tabela ordenável."
+      />
     );
   }
 
@@ -152,13 +155,10 @@ export function CardsListTable({ pipeId, cards, phases, labels }: CardsListTable
                 <div className="space-y-0.5">
                   <p className="text-muted-foreground">Fase</p>
                   <p className="inline-flex items-center gap-1.5">
-                    {phase?.color ? (
-                      <span
-                        className="size-2 rounded-full"
-                        style={{ backgroundColor: phase.color }}
-                        aria-hidden
-                      />
-                    ) : null}
+                    <span
+                      className={cn("size-2 shrink-0 rounded-full", getPhaseColor(phase?.color).bar)}
+                      aria-hidden
+                    />
                     {phase?.name ?? "—"}
                   </p>
                 </div>
