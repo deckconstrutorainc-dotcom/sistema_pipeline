@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { addComment } from "@/server/actions/cards";
 import { addCommentSchema, type AddCommentInput } from "@/lib/validation/cards";
 
@@ -42,11 +43,7 @@ export function AddCommentForm({ cardId, pipeId }: AddCommentFormProps) {
     <form className="space-y-2" onSubmit={handleSubmit(onSubmit)} noValidate>
       <input type="hidden" {...register("cardId")} />
       <input type="hidden" {...register("pipeId")} />
-      <textarea
-        className="min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        placeholder="Escreva um comentário..."
-        {...register("body")}
-      />
+      <Textarea className="min-h-20" placeholder="Escreva um comentário..." {...register("body")} />
       {errors.body ? <p className="text-sm text-destructive">{errors.body.message}</p> : null}
       <Button type="submit" size="sm" disabled={isSubmitting}>
         {isSubmitting ? "Enviando..." : "Comentar"}

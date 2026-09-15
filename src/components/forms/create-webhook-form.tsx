@@ -95,7 +95,7 @@ export function CreateWebhookForm({ organizationId }: CreateWebhookFormProps) {
           <Label htmlFor="webhook-direction">Direção</Label>
           <select
             id="webhook-direction"
-            className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+            className="h-8 w-full rounded-md border border-input bg-card px-2.5 text-ui-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             {...register("direction")}
           >
             {webhookDirections.map((d) => (

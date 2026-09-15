@@ -2,6 +2,14 @@ import Link from "next/link";
 
 import { CreateDatabaseFieldForm } from "@/components/forms/create-database-field-form";
 import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { hasOrgRole, requireActiveOrganization } from "@/lib/auth/session";
 import { getDatabaseDetail, listRecords } from "@/server/queries/databases";
 
@@ -111,41 +119,39 @@ export default async function DatabaseDetailPage({ params, searchParams }: Datab
           <p>{q ? "Nenhum registro encontrado para essa busca." : "Nenhum registro criado ainda."}</p>
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/50 text-left">
-              <tr>
-                <th className="p-3 font-medium">Título</th>
+        <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="p-3 font-medium">Título</TableHead>
                 {activeFields.map((field) => (
-                  <th key={field.id} className="p-3 font-medium">
+                  <TableHead key={field.id} className="p-3 font-medium">
                     {field.label}
-                  </th>
+                  </TableHead>
                 ))}
-                <th className="p-3" />
-              </tr>
-            </thead>
-            <tbody>
+                <TableHead className="p-3" />
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {records.map((record) => (
-                <tr key={record.id} className="border-t">
-                  <td className="p-3 font-medium">{record.title}</td>
+                <TableRow key={record.id} className="border-t">
+                  <TableCell className="p-3 font-medium">{record.title}</TableCell>
                   {activeFields.map((field) => (
-                    <td key={field.id} className="p-3 text-muted-foreground">
+                    <TableCell key={field.id} className="p-3 text-muted-foreground">
                       {formatCellValue(record.values[field.id])}
-                    </td>
+                    </TableCell>
                   ))}
-                  <td className="p-3 text-right">
+                  <TableCell className="p-3 text-right">
                     <Link
                       href={`/databases/${databaseId}/records/${record.id}`}
                       className="text-sm text-primary underline-offset-4 hover:underline"
                     >
                       Editar
                     </Link>
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </TableBody>
+          </Table>
       )}
     </div>
   );

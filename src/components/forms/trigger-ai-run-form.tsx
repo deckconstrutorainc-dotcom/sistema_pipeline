@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { triggerAiRun } from "@/server/actions/ai-runs";
 
@@ -76,7 +77,7 @@ export function TriggerAiRunForm({ cardId, agents }: TriggerAiRunFormProps) {
         <Label htmlFor="ai-run-agent">Agente</Label>
         <select
           id="ai-run-agent"
-          className="h-9 w-full rounded-md border border-input bg-background px-2 text-sm"
+          className="h-8 w-full rounded-md border border-input bg-card px-2 text-ui-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           {...register("agentId")}
         >
           {agents.map((agent) => (
@@ -89,13 +90,7 @@ export function TriggerAiRunForm({ cardId, agents }: TriggerAiRunFormProps) {
 
       <div className="space-y-1">
         <Label htmlFor="ai-run-instruction">Instrução</Label>
-        <textarea
-          id="ai-run-instruction"
-          rows={3}
-          className="w-full rounded-md border border-input bg-background p-2 text-sm"
-          placeholder="Ex.: Resuma este card e sugira uma label de prioridade."
-          {...register("instruction")}
-        />
+        <Textarea id="ai-run-instruction" rows={3} placeholder="Ex.: Resuma este card e sugira uma label de prioridade." {...register("instruction")} />
       </div>
 
       <Button type="submit" size="sm" disabled={isSubmitting}>

@@ -79,7 +79,7 @@ export function AutofillForm({ cardId, pipeId, recordId, databaseFields, cardFie
                 <span className="w-40 truncate text-muted-foreground">{dbField.label}</span>
                 <span>→</span>
                 <select
-                  className="h-9 flex-1 rounded-md border border-input bg-background px-2 text-sm"
+                  className="h-8 flex-1 rounded-md border border-input bg-card px-2 text-ui-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   value={mapping[dbField.key] ?? ""}
                   onChange={(event) => setMapping((prev) => ({ ...prev, [dbField.key]: event.target.value }))}
                   disabled={compatibleCardFields.length === 0}

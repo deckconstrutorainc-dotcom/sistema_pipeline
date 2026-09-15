@@ -62,7 +62,7 @@ export function InviteMemberForm({ organizationId }: InviteMemberFormProps) {
         <Label htmlFor="invite-role">Papel</Label>
         <select
           id="invite-role"
-          className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+          className="h-8 rounded-md border border-input bg-card px-2.5 text-ui-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           {...register("roleKey")}
         >
           {assignableRoleKeys.map((key) => (

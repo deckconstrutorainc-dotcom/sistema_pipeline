@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { createKnowledgeSourceSchema, type CreateKnowledgeSourceInput } from "@/lib/validation/ai";
 import { createKnowledgeSource } from "@/server/actions/knowledge-sources";
@@ -69,7 +70,7 @@ export function CreateKnowledgeSourceForm({ organizationId, agents }: CreateKnow
           <Label htmlFor="knowledge-agent">Agente (opcional)</Label>
           <select
             id="knowledge-agent"
-            className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+            className="h-8 w-full rounded-md border border-input bg-card px-2.5 text-ui-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             {...register("aiAgentId")}
           >
             <option value="">Disponível para qualquer agente</option>
@@ -84,13 +85,7 @@ export function CreateKnowledgeSourceForm({ organizationId, agents }: CreateKnow
 
       <div className="space-y-1">
         <Label htmlFor="knowledge-content">Conteúdo (texto)</Label>
-        <textarea
-          id="knowledge-content"
-          rows={5}
-          className="w-full rounded-md border border-input bg-background p-2 text-sm"
-          placeholder="Cole aqui o texto que servirá de contexto (busca textual simples, não semântica)."
-          {...register("content")}
-        />
+        <Textarea id="knowledge-content" rows={5} placeholder="Cole aqui o texto que servirá de contexto (busca textual simples, não semântica)." {...register("content")} />
         {errors.content ? <p className="text-sm text-destructive">{errors.content.message}</p> : null}
       </div>
 

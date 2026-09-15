@@ -74,7 +74,7 @@ export function CreateReportForm({ organizationId, pipes }: CreateReportFormProp
         <Label htmlFor="report-metric">Métrica</Label>
         <select
           id="report-metric"
-          className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+          className="h-8 rounded-md border border-input bg-card px-2.5 text-ui-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           {...register("config.metric")}
         >
           {reportMetricValues.map((metric) => (
@@ -89,7 +89,7 @@ export function CreateReportForm({ organizationId, pipes }: CreateReportFormProp
         <Label htmlFor="report-pipe">Pipe (opcional — vazio = toda a organização)</Label>
         <select
           id="report-pipe"
-          className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+          className="h-8 rounded-md border border-input bg-card px-2.5 text-ui-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           {...register("pipeId", { setValueAs: (v: string) => (v === "" ? undefined : v) })}
         >
           <option value="">Toda a organização</option>

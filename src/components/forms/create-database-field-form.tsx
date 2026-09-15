@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
   createDatabaseFieldSchema,
@@ -100,7 +101,7 @@ export function CreateDatabaseFieldForm({ databaseId }: CreateDatabaseFieldFormP
           <Label htmlFor="field-type">Tipo</Label>
           <select
             id="field-type"
-            className="h-10 w-full rounded-md border border-input bg-background px-2 text-sm"
+            className="h-8 w-full rounded-md border border-input bg-card px-2 text-ui-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             {...register("type")}
           >
             {databaseFieldTypes.map((type) => (
@@ -119,12 +120,7 @@ export function CreateDatabaseFieldForm({ databaseId }: CreateDatabaseFieldFormP
       {needsOptions ? (
         <div className="space-y-1">
           <Label htmlFor="field-options">Opções (uma por linha, formato valor|rótulo)</Label>
-          <textarea
-            id="field-options"
-            className="min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-            placeholder={"ativo|Ativo\ninativo|Inativo"}
-            value={optionsText}
-            onChange={(event) => setOptionsText(event.target.value)}
+          <Textarea className="min-h-20" id="field-options" placeholder={"ativo|Ativo\ninativo|Inativo"} value={optionsText} onChange={(event) => setOptionsText(event.target.value)}
           />
           {errors.options ? <p className="text-sm text-destructive">{errors.options.message}</p> : null}
         </div>

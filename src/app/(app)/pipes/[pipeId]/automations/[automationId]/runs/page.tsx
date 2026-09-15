@@ -1,6 +1,14 @@
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { requireActiveOrganization } from "@/lib/auth/session";
 import { listAutomationRuns, listAutomations } from "@/server/actions/automations";
 
@@ -73,40 +81,38 @@ export default async function AutomationRunsPage({ params }: AutomationRunsPageP
           <code className="rounded bg-muted px-1">/api/automations/process</code>.
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border">
-          <table className="w-full text-sm">
-            <thead className="border-b bg-muted/50 text-left text-xs uppercase text-muted-foreground">
-              <tr>
-                <th className="p-3">Status</th>
-                <th className="p-3">Tentativa</th>
-                <th className="p-3">Erro</th>
-                <th className="p-3">Criada em</th>
-                <th className="p-3">Finalizada em</th>
-              </tr>
-            </thead>
-            <tbody>
+        <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="p-3">Status</TableHead>
+                <TableHead className="p-3">Tentativa</TableHead>
+                <TableHead className="p-3">Erro</TableHead>
+                <TableHead className="p-3">Criada em</TableHead>
+                <TableHead className="p-3">Finalizada em</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {runs.map((run) => (
-                <tr key={run.id} className="border-b last:border-0">
-                  <td className="p-3">
+                <TableRow key={run.id} className="border-b last:border-0">
+                  <TableCell className="p-3">
                     <Badge variant={statusVariant[run.status] ?? "outline"}>
                       {statusLabels[run.status] ?? run.status}
                     </Badge>
-                  </td>
-                  <td className="p-3">
+                  </TableCell>
+                  <TableCell className="p-3">
                     {run.attempt}/{run.maxAttempts}
-                  </td>
-                  <td className="p-3 max-w-xs truncate text-destructive">{run.errorMessage ?? "—"}</td>
-                  <td className="p-3 text-muted-foreground">
+                  </TableCell>
+                  <TableCell className="p-3 max-w-xs truncate text-destructive">{run.errorMessage ?? "—"}</TableCell>
+                  <TableCell className="p-3 text-muted-foreground">
                     {new Date(run.createdAt).toLocaleString("pt-BR")}
-                  </td>
-                  <td className="p-3 text-muted-foreground">
+                  </TableCell>
+                  <TableCell className="p-3 text-muted-foreground">
                     {run.finishedAt ? new Date(run.finishedAt).toLocaleString("pt-BR") : "—"}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </TableBody>
+          </Table>
       )}
     </div>
   );

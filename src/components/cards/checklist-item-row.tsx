@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { cn } from "@/lib/utils";
 import {
   deleteChecklistItem,
@@ -72,18 +73,16 @@ export function ChecklistItemRow({ itemId, cardId, pipeId, title, isDone }: Chec
 
   return (
     <li className="group flex items-center gap-2 rounded-md px-1 py-1 hover:bg-muted/50">
-      <input
-        type="checkbox"
-        className="h-4 w-4 rounded border-input"
+      <Checkbox
         checked={isDone}
         disabled={isPending}
-        onChange={handleToggle}
+        onCheckedChange={handleToggle}
         aria-label={isDone ? "Marcar item como pendente" : "Marcar item como concluído"}
       />
       {isEditing ? (
         <input
           autoFocus
-          className="h-7 flex-1 rounded-md border border-input bg-background px-2 text-sm"
+          className="h-7 flex-1 rounded-md border border-input bg-card px-2 text-ui-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           value={draftTitle}
           disabled={isPending}
           onChange={(event) => setDraftTitle(event.target.value)}

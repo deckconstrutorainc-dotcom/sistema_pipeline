@@ -7,6 +7,7 @@ import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
   createDocumentTemplateSchema,
@@ -64,12 +65,7 @@ export function CreateDocumentTemplateForm({ organizationId, pipeId }: CreateDoc
           Conteúdo (HTML) — use placeholders como <code>{"{{card.title}}"}</code>,{" "}
           <code>{"{{card.number}}"}</code>, <code>{"{{field.chave_do_campo}}"}</code>
         </Label>
-        <textarea
-          id="template-body"
-          rows={8}
-          className="w-full rounded-md border border-input bg-background p-2 font-mono text-sm"
-          {...register("body")}
-        />
+        <Textarea className="font-mono" id="template-body" rows={8} {...register("body")} />
         {errors.body ? <p className="text-sm text-destructive">{errors.body.message}</p> : null}
       </div>
 

@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import type { PortalItemSummary } from "@/server/queries/portals";
 import { configurePortalItems } from "@/server/actions/portals";
 
@@ -99,21 +100,19 @@ export function ConfigurePortalItemsForm({
         {pipeFields.map((field) => (
           <li key={field.id} className="flex items-center justify-between gap-3 rounded-md border px-3 py-2 text-sm">
             <label className="flex items-center gap-2">
-              <input
-                type="checkbox"
+              <Checkbox
                 checked={state[field.id]?.selected ?? false}
-                onChange={() => toggleSelected(field.id)}
+                onCheckedChange={() => toggleSelected(field.id)}
               />
               <span>
                 {field.label} <span className="text-xs text-muted-foreground">({field.type})</span>
               </span>
             </label>
             <label className="flex items-center gap-2 text-xs text-muted-foreground">
-              <input
-                type="checkbox"
+              <Checkbox
                 checked={state[field.id]?.requiredOverride ?? false}
                 disabled={!state[field.id]?.selected}
-                onChange={() => toggleRequired(field.id)}
+                onCheckedChange={() => toggleRequired(field.id)}
               />
               Obrigatório no portal
             </label>

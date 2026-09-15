@@ -1,6 +1,14 @@
 import { InviteMemberForm } from "@/components/forms/invite-member-form";
 import { hasOrgRole, requireActiveOrganization } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface MembershipRow {
   id: string;
@@ -49,34 +57,34 @@ export default async function MembersSettingsPage() {
       {canManageMembers ? <InviteMemberForm organizationId={organization.id} /> : null}
 
       <div className="overflow-hidden rounded-lg border">
-        <table className="w-full text-sm">
-          <thead className="bg-muted/50 text-left text-muted-foreground">
-            <tr>
-              <th className="px-4 py-2 font-medium">Nome</th>
-              <th className="px-4 py-2 font-medium">Papel</th>
-              <th className="px-4 py-2 font-medium">Status</th>
-            </tr>
-          </thead>
-          <tbody>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="px-4 py-2 font-medium">Nome</TableHead>
+              <TableHead className="px-4 py-2 font-medium">Papel</TableHead>
+              <TableHead className="px-4 py-2 font-medium">Status</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {memberships.map((membership) => {
               const profile = profilesById.get(membership.user_id);
               return (
-                <tr key={membership.id} className="border-t">
-                  <td className="px-4 py-2">{profile?.full_name ?? "—"}</td>
-                  <td className="px-4 py-2">{membership.roles?.name ?? "—"}</td>
-                  <td className="px-4 py-2">{membership.status}</td>
-                </tr>
+                <TableRow key={membership.id} className="border-t">
+                  <TableCell className="px-4 py-2">{profile?.full_name ?? "—"}</TableCell>
+                  <TableCell className="px-4 py-2">{membership.roles?.name ?? "—"}</TableCell>
+                  <TableCell className="px-4 py-2">{membership.status}</TableCell>
+                </TableRow>
               );
             })}
             {memberships.length === 0 ? (
-              <tr>
-                <td className="px-4 py-6 text-center text-muted-foreground" colSpan={3}>
+              <TableRow>
+                <TableCell className="px-4 py-6 text-center text-muted-foreground" colSpan={3}>
                   Nenhum membro encontrado.
-                </td>
-              </tr>
+                </TableCell>
+              </TableRow>
             ) : null}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
     </div>
   );

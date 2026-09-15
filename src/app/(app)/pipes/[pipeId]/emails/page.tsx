@@ -3,6 +3,14 @@ import Link from "next/link";
 import { requireActiveOrganization } from "@/lib/auth/session";
 import { getPipeBoardData } from "@/server/queries/pipes";
 import { listEmailThreadsForPipe } from "@/server/queries/email";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 interface PipeEmailsPageProps {
   params: Promise<{ pipeId: string }>;
@@ -54,37 +62,35 @@ export default async function PipeEmailsPage({ params }: PipeEmailsPageProps) {
           Nenhuma thread de e-mail registrada para os cards deste pipe ainda.
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border">
-          <table className="w-full text-sm">
-            <thead className="bg-muted/50 text-left text-xs uppercase text-muted-foreground">
-              <tr>
-                <th className="px-3 py-2 font-medium">Assunto</th>
-                <th className="px-3 py-2 font-medium">Card</th>
-                <th className="px-3 py-2 font-medium">Mensagens</th>
-                <th className="px-3 py-2 font-medium">Última mensagem</th>
-              </tr>
-            </thead>
-            <tbody>
+        <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="font-medium">Assunto</TableHead>
+                <TableHead className="font-medium">Card</TableHead>
+                <TableHead className="font-medium">Mensagens</TableHead>
+                <TableHead className="font-medium">Última mensagem</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {threads.map((thread) => (
-                <tr key={thread.id} className="border-t">
-                  <td className="px-3 py-2">{thread.subject}</td>
-                  <td className="px-3 py-2">
+                <TableRow key={thread.id} className="border-t">
+                  <TableCell>{thread.subject}</TableCell>
+                  <TableCell>
                     <Link
                       href={`/pipes/${pipeId}/cards/${thread.cardId}`}
                       className="text-primary underline-offset-4 hover:underline"
                     >
                       #{thread.cardNumber} {thread.cardTitle}
                     </Link>
-                  </td>
-                  <td className="px-3 py-2">{thread.messageCount}</td>
-                  <td className="px-3 py-2 text-muted-foreground">
+                  </TableCell>
+                  <TableCell>{thread.messageCount}</TableCell>
+                  <TableCell className="text-muted-foreground">
                     {formatDateTime(thread.lastMessageAt)}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </TableBody>
+          </Table>
       )}
     </div>
   );

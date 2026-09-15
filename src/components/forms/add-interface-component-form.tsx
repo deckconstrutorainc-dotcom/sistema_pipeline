@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
   interfaceComponentTypeValues,
@@ -112,7 +113,7 @@ export function AddInterfaceComponentForm({
         <Label htmlFor="component-type">Tipo</Label>
         <select
           id="component-type"
-          className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+          className="h-8 rounded-md border border-input bg-card px-2.5 text-ui-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           value={componentType}
           onChange={(event) => {
             setComponentType(event.target.value as InterfaceComponentType);
@@ -132,7 +133,7 @@ export function AddInterfaceComponentForm({
           <Label htmlFor="component-reference">Referência</Label>
           <select
             id="component-reference"
-            className="h-10 min-w-48 rounded-md border border-input bg-background px-3 text-sm"
+            className="h-8 min-w-48 rounded-md border border-input bg-card px-2.5 text-ui-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             value={referenceId}
             onChange={(event) => setReferenceId(event.target.value)}
           >
@@ -147,11 +148,7 @@ export function AddInterfaceComponentForm({
       ) : (
         <div className="w-full space-y-1">
           <Label htmlFor="component-text">Texto</Label>
-          <textarea
-            id="component-text"
-            className="min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-            value={text}
-            onChange={(event) => setText(event.target.value)}
+          <Textarea className="min-h-20" id="component-text" value={text} onChange={(event) => setText(event.target.value)}
             placeholder="Texto exibido neste bloco da interface."
           />
         </div>

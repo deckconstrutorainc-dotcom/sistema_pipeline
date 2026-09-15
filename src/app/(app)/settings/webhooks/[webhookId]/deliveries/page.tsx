@@ -1,6 +1,14 @@
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { hasOrgRole, requireActiveOrganization } from "@/lib/auth/session";
 import { listWebhookDeliveries, listWebhooks } from "@/server/actions/webhooks";
 
@@ -74,42 +82,40 @@ export default async function WebhookDeliveriesPage({ params }: WebhookDeliverie
             : "Entregas aparecem aqui quando o sistema externo chamar a URL de recebimento."}
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-lg border">
-          <table className="w-full text-sm">
-            <thead className="border-b bg-muted/50 text-left text-xs uppercase text-muted-foreground">
-              <tr>
-                <th className="p-3">Status</th>
-                <th className="p-3">HTTP</th>
-                <th className="p-3">Tentativa</th>
-                <th className="p-3">Erro</th>
-                <th className="p-3">Criada em</th>
-                <th className="p-3">Entregue em</th>
-              </tr>
-            </thead>
-            <tbody>
+        <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="p-3">Status</TableHead>
+                <TableHead className="p-3">HTTP</TableHead>
+                <TableHead className="p-3">Tentativa</TableHead>
+                <TableHead className="p-3">Erro</TableHead>
+                <TableHead className="p-3">Criada em</TableHead>
+                <TableHead className="p-3">Entregue em</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {deliveries.map((delivery) => (
-                <tr key={delivery.id} className="border-b last:border-0">
-                  <td className="p-3">
+                <TableRow key={delivery.id} className="border-b last:border-0">
+                  <TableCell className="p-3">
                     <Badge variant={statusVariant[delivery.status] ?? "outline"}>
                       {statusLabels[delivery.status] ?? delivery.status}
                     </Badge>
-                  </td>
-                  <td className="p-3">{delivery.httpStatus ?? "—"}</td>
-                  <td className="p-3">
+                  </TableCell>
+                  <TableCell className="p-3">{delivery.httpStatus ?? "—"}</TableCell>
+                  <TableCell className="p-3">
                     {delivery.attempt}/{delivery.maxAttempts}
-                  </td>
-                  <td className="p-3 max-w-xs truncate text-destructive">{delivery.errorMessage ?? "—"}</td>
-                  <td className="p-3 text-muted-foreground">
+                  </TableCell>
+                  <TableCell className="p-3 max-w-xs truncate text-destructive">{delivery.errorMessage ?? "—"}</TableCell>
+                  <TableCell className="p-3 text-muted-foreground">
                     {new Date(delivery.createdAt).toLocaleString("pt-BR")}
-                  </td>
-                  <td className="p-3 text-muted-foreground">
+                  </TableCell>
+                  <TableCell className="p-3 text-muted-foreground">
                     {delivery.deliveredAt ? new Date(delivery.deliveredAt).toLocaleString("pt-BR") : "—"}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </TableBody>
+          </Table>
       )}
     </div>
   );

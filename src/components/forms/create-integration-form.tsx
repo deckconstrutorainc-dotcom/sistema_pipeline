@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { createIntegration } from "@/server/actions/integrations";
 import { integrationProviders, type IntegrationProvider } from "@/lib/validation/integrations";
@@ -102,7 +103,7 @@ export function CreateIntegrationForm({ organizationId }: CreateIntegrationFormP
           <Label htmlFor="integration-provider">Provider</Label>
           <select
             id="integration-provider"
-            className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+            className="h-8 w-full rounded-md border border-input bg-card px-2.5 text-ui-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             {...register("provider")}
           >
             {integrationProviders.map((provider) => (
@@ -116,21 +117,12 @@ export function CreateIntegrationForm({ organizationId }: CreateIntegrationFormP
 
       <div className="space-y-1">
         <Label htmlFor="integration-description">Descrição (opcional)</Label>
-        <textarea
-          id="integration-description"
-          className="min-h-16 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          {...register("description")}
-        />
+        <Textarea className="min-h-16" id="integration-description" {...register("description")} />
       </div>
 
       <div className="space-y-1">
         <Label htmlFor="integration-config">Configuração (JSON, não-sensível — nunca coloque segredos aqui)</Label>
-        <textarea
-          id="integration-config"
-          className="min-h-16 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          placeholder="{}"
-          {...register("configJson")}
-        />
+        <Textarea className="min-h-16 font-mono" id="integration-config" placeholder="{}" {...register("configJson")} />
       </div>
 
       <Button type="submit" disabled={isSubmitting}>

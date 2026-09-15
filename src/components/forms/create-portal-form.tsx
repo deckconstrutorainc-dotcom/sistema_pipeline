@@ -74,7 +74,7 @@ export function CreatePortalForm({ pipeId }: CreatePortalFormProps) {
         <Label htmlFor="portal-visibility">Visibilidade</Label>
         <select
           id="portal-visibility"
-          className="h-10 w-full rounded-md border border-input bg-background px-2 text-sm sm:w-auto"
+          className="h-8 w-full rounded-md border border-input bg-card px-2 text-ui-sm sm:w-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           {...register("visibility")}
         >
           <option value="public">Público (link aberto)</option>

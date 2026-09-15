@@ -5,6 +5,7 @@ import { useState, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import type { FieldType } from "@/lib/validation/fields";
 
@@ -162,12 +163,7 @@ function PortalFieldInput({ field, value, onChange }: PortalFieldInputProps) {
   switch (field.type) {
     case "long_text":
       return (
-        <textarea
-          id={id}
-          placeholder={field.placeholder ?? undefined}
-          className="min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-          value={typeof value === "string" ? value : ""}
-          onChange={(event) => onChange(event.target.value)}
+        <Textarea className="min-h-20" id={id} placeholder={field.placeholder ?? undefined} value={typeof value === "string" ? value : ""} onChange={(event) => onChange(event.target.value)}
         />
       );
     case "number":
@@ -232,7 +228,7 @@ function PortalFieldInput({ field, value, onChange }: PortalFieldInputProps) {
       return (
         <select
           id={id}
-          className="h-10 w-full rounded-md border border-input bg-background px-2 text-sm"
+          className="h-8 w-full rounded-md border border-input bg-card px-2 text-ui-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           value={typeof value === "string" ? value : ""}
           onChange={(event) => onChange(event.target.value || null)}
         >
@@ -250,7 +246,7 @@ function PortalFieldInput({ field, value, onChange }: PortalFieldInputProps) {
         <select
           id={id}
           multiple
-          className="w-full rounded-md border border-input bg-background px-2 py-1 text-sm"
+          className="w-full rounded-md border border-input bg-card px-2 py-1 text-ui-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           value={selected}
           onChange={(event) => onChange(Array.from(event.target.selectedOptions).map((opt) => opt.value))}
         >

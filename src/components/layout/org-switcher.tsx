@@ -41,7 +41,7 @@ export function OrgSwitcher({ organizations, activeOrganizationId }: OrgSwitcher
     <div className="flex flex-col gap-1">
       <select
         aria-label="Organização ativa"
-        className="h-9 rounded-md border border-input bg-background px-2 text-sm disabled:opacity-50"
+        className="h-8 rounded-md border border-input bg-card px-2 text-ui-sm disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         value={activeOrganizationId}
         disabled={isPending}
         onChange={(event) => handleChange(event.target.value)}

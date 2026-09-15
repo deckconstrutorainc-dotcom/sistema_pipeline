@@ -5,6 +5,7 @@ import { useState, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { logOutboundEmail } from "@/server/actions/email";
 
@@ -76,11 +77,7 @@ export function SendEmailForm({ cardId, defaultFromAddress }: SendEmailFormProps
       </div>
       <div className="space-y-1">
         <Label htmlFor="email-body">Mensagem</Label>
-        <textarea
-          id="email-body"
-          className="min-h-24 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-          value={body}
-          onChange={(event) => setBody(event.target.value)}
+        <Textarea className="min-h-24" id="email-body" value={body} onChange={(event) => setBody(event.target.value)}
         />
       </div>
       <Button type="submit" size="sm" disabled={isSubmitting}>

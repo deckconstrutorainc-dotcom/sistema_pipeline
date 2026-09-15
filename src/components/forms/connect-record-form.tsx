@@ -57,7 +57,7 @@ export function ConnectRecordForm({ cardId, pipeId, databases, alreadyConnectedR
       <p className="text-xs font-medium text-muted-foreground">Conectar a um registro</p>
       <div className="flex flex-wrap items-center gap-2">
         <select
-          className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+          className="h-8 rounded-md border border-input bg-card px-2 text-ui-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           value={databaseId}
           onChange={(event) => {
             setDatabaseId(event.target.value);

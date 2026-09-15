@@ -76,7 +76,7 @@ export function AddWidgetForm({ dashboardId, reports }: AddWidgetFormProps) {
         <Label htmlFor="widget-type">Tipo</Label>
         <select
           id="widget-type"
-          className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+          className="h-8 rounded-md border border-input bg-card px-2.5 text-ui-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           {...register("widgetType")}
         >
           {dashboardWidgetTypeValues.map((type) => (
@@ -91,7 +91,7 @@ export function AddWidgetForm({ dashboardId, reports }: AddWidgetFormProps) {
         <Label htmlFor="widget-report">Report (opcional)</Label>
         <select
           id="widget-report"
-          className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+          className="h-8 rounded-md border border-input bg-card px-2.5 text-ui-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           {...register("reportId", { setValueAs: (v: string) => (v === "" ? undefined : v) })}
         >
           <option value="">Nenhum</option>

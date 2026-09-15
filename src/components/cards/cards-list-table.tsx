@@ -4,8 +4,18 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 
+import { AvatarStack } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { getLabelStyle } from "@/lib/phase-colors";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { getLabelStyle, getPhaseColor } from "@/lib/phase-colors";
 import { cn } from "@/lib/utils";
 import { getDueStatus } from "@/lib/validation/cards";
 import type { CardSummary, LabelSummary, PhaseSummary } from "@/server/queries/pipes";
@@ -91,16 +101,16 @@ export function CardsListTable({ pipeId, cards, phases, labels }: CardsListTable
 
   function SortableHeader({ field, children }: { field: SortField; children: React.ReactNode }) {
     return (
-      <th className="px-3 py-2 font-medium">
+      <TableHead>
         <button
           type="button"
           onClick={() => toggleSort(field)}
-          className="flex items-center gap-1 hover:text-foreground"
+          className="flex items-center gap-1 transition-colors hover:text-foreground"
         >
           {children}
           <SortIcon field={field} />
         </button>
-      </th>
+      </TableHead>
     );
   }
 
@@ -203,52 +213,51 @@ export function CardsListTable({ pipeId, cards, phases, labels }: CardsListTable
         })}
       </ul>
 
-      <div className="hidden overflow-x-auto rounded-lg border md:block">
-        <table className="w-full text-sm">
-          <thead className="bg-muted/50 text-left text-xs uppercase text-muted-foreground">
-            <tr>
+      <div className="hidden md:block">
+        <Table>
+          <TableHeader>
+            <TableRow>
               <SortableHeader field="number">Número</SortableHeader>
               <SortableHeader field="title">Título</SortableHeader>
               <SortableHeader field="phase">Fase</SortableHeader>
-              <th className="px-3 py-2 font-medium">Responsáveis</th>
-              <th className="px-3 py-2 font-medium">Labels</th>
+              <TableHead>Responsáveis</TableHead>
+              <TableHead>Etiquetas</TableHead>
               <SortableHeader field="dueDate">Prazo</SortableHeader>
               <SortableHeader field="createdAt">Criado em</SortableHeader>
-            </tr>
-          </thead>
-          <tbody>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {pageItems.map((card) => {
               const phase = phasesById.get(card.currentPhaseId);
               const dueStatus = getDueStatus(card.dueDate);
               return (
-                <tr key={card.id} className="border-t">
-                  <td className="px-3 py-2 text-muted-foreground">#{card.number}</td>
-                  <td className="px-3 py-2">
+                <TableRow key={card.id}>
+                  <TableCell className="tabular text-muted-foreground">#{card.number}</TableCell>
+                  <TableCell>
                     <Link
                       href={`/pipes/${pipeId}/cards/${card.id}`}
                       className="font-medium text-primary underline-offset-4 hover:underline"
                     >
                       {card.title}
                     </Link>
-                  </td>
-                  <td className="px-3 py-2">
-                    <span className="inline-flex items-center gap-1.5">
-                      {phase?.color ? (
-                        <span
-                          className="size-2 rounded-full"
-                          style={{ backgroundColor: phase.color }}
-                          aria-hidden
-                        />
-                      ) : null}
+                  </TableCell>
+                  <TableCell>
+                    <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
+                      <span
+                        className={cn("size-2 shrink-0 rounded-full", getPhaseColor(phase?.color).bar)}
+                        aria-hidden
+                      />
                       {phase?.name ?? "—"}
                     </span>
-                  </td>
-                  <td className="px-3 py-2 text-muted-foreground">
-                    {card.assignees.length === 0
-                      ? "—"
-                      : card.assignees.map((a) => a.fullName ?? "Sem nome").join(", ")}
-                  </td>
-                  <td className="px-3 py-2">
+                  </TableCell>
+                  <TableCell>
+                    {card.assignees.length === 0 ? (
+                      <span className="text-muted-foreground">—</span>
+                    ) : (
+                      <AvatarStack people={card.assignees} max={3} size="sm" />
+                    )}
+                  </TableCell>
+                  <TableCell>
                     {card.labelIds.length === 0 ? (
                       <span className="text-muted-foreground">—</span>
                     ) : (
@@ -268,8 +277,8 @@ export function CardsListTable({ pipeId, cards, phases, labels }: CardsListTable
                         })}
                       </div>
                     )}
-                  </td>
-                  <td className="px-3 py-2">
+                  </TableCell>
+                  <TableCell className="whitespace-nowrap">
                     {card.dueDate ? (
                       <span
                         className={cn(
@@ -291,39 +300,41 @@ export function CardsListTable({ pipeId, cards, phases, labels }: CardsListTable
                         Vence em breve
                       </Badge>
                     ) : null}
-                  </td>
-                  <td className="px-3 py-2 text-muted-foreground">
+                  </TableCell>
+                  <TableCell className="tabular whitespace-nowrap text-muted-foreground">
                     {new Date(card.createdAt).toLocaleDateString("pt-BR")}
-                  </td>
-                </tr>
+                  </TableCell>
+                </TableRow>
               );
             })}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
 
       {totalPages > 1 ? (
-        <div className="flex flex-col gap-2 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
-          <span>
-            Página {currentPage + 1} de {totalPages} ({sorted.length} cards)
+        <div className="flex flex-col gap-2 text-ui-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+          <span className="tabular">
+            Página {currentPage + 1} de {totalPages} · {sorted.length} cards
           </span>
-          <div className="flex gap-2">
-            <button
+          <div className="flex gap-1.5">
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={() => setPage((p) => Math.max(0, p - 1))}
               disabled={currentPage === 0}
-              className="min-h-11 rounded-md border px-3 disabled:opacity-40"
             >
               Anterior
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
               disabled={currentPage >= totalPages - 1}
-              className="min-h-11 rounded-md border px-3 disabled:opacity-40"
             >
               Próxima
-            </button>
+            </Button>
           </div>
         </div>
       ) : null}

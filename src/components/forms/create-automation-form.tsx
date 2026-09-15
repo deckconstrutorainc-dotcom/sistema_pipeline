@@ -8,6 +8,7 @@ import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { createAutomation } from "@/server/actions/automations";
 import {
@@ -173,7 +174,7 @@ export function CreateAutomationForm({ pipeId }: CreateAutomationFormProps) {
           <Label htmlFor="automation-trigger">Quando (evento)</Label>
           <select
             id="automation-trigger"
-            className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+            className="h-8 w-full rounded-md border border-input bg-card px-2.5 text-ui-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             {...register("triggerEvent")}
           >
             {triggerEvents.map((event) => (
@@ -187,11 +188,7 @@ export function CreateAutomationForm({ pipeId }: CreateAutomationFormProps) {
 
       <div className="space-y-1">
         <Label htmlFor="automation-description">Descrição (opcional)</Label>
-        <textarea
-          id="automation-description"
-          className="min-h-16 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          {...register("description")}
-        />
+        <Textarea className="min-h-16" id="automation-description" {...register("description")} />
       </div>
 
       <div className="space-y-2">
@@ -214,7 +211,7 @@ export function CreateAutomationForm({ pipeId }: CreateAutomationFormProps) {
               {...register(`conditions.${index}.field` as const)}
             />
             <select
-              className="h-10 rounded-md border border-input bg-background px-2 text-sm"
+              className="h-8 rounded-md border border-input bg-card px-2 text-ui-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               {...register(`conditions.${index}.operator` as const)}
             >
               {conditionOperators.map((op) => (
@@ -247,7 +244,7 @@ export function CreateAutomationForm({ pipeId }: CreateAutomationFormProps) {
           <div key={field.id} className="space-y-1 rounded-md border p-2">
             <div className="flex flex-wrap items-center gap-2">
               <select
-                className="h-10 rounded-md border border-input bg-background px-2 text-sm"
+                className="h-8 rounded-md border border-input bg-card px-2 text-ui-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 {...register(`actions.${index}.type` as const)}
               >
                 {actionTypes.map((type) => (
@@ -260,11 +257,7 @@ export function CreateAutomationForm({ pipeId }: CreateAutomationFormProps) {
                 Remover
               </Button>
             </div>
-            <textarea
-              className="min-h-14 w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-xs focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              placeholder="Parâmetros em JSON"
-              {...register(`actions.${index}.paramsJson` as const)}
-            />
+            <Textarea className="min-h-14 font-mono" placeholder="Parâmetros em JSON" {...register(`actions.${index}.paramsJson` as const)} />
             {errors.actions?.[index]?.paramsJson ? (
               <p className="text-sm text-destructive">{errors.actions[index]?.paramsJson?.message}</p>
             ) : null}

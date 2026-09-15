@@ -6,7 +6,9 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { TOOL_CATALOG } from "@/lib/ai/tool-catalog";
 import { createAiAgentSchema, type CreateAiAgentInput } from "@/lib/validation/ai";
@@ -99,7 +101,7 @@ export function CreateAiAgentForm({ organizationId, pipes }: CreateAiAgentFormPr
           <Label htmlFor="agent-pipe">Escopo (opcional)</Label>
           <select
             id="agent-pipe"
-            className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+            className="h-8 w-full rounded-md border border-input bg-card px-2.5 text-ui-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             {...register("pipeId")}
           >
             <option value="">Toda a organização</option>
@@ -119,13 +121,7 @@ export function CreateAiAgentForm({ organizationId, pipes }: CreateAiAgentFormPr
 
       <div className="space-y-1">
         <Label htmlFor="agent-instructions">Instruções (system prompt)</Label>
-        <textarea
-          id="agent-instructions"
-          rows={5}
-          className="w-full rounded-md border border-input bg-background p-2 text-sm"
-          placeholder="Ex.: Você é um assistente que resume cards de contratos e sugere labels de risco."
-          {...register("instructions")}
-        />
+        <Textarea id="agent-instructions" rows={5} placeholder="Ex.: Você é um assistente que resume cards de contratos e sugere labels de risco." {...register("instructions")} />
         {errors.instructions ? <p className="text-sm text-destructive">{errors.instructions.message}</p> : null}
       </div>
 
@@ -138,11 +134,10 @@ export function CreateAiAgentForm({ organizationId, pipes }: CreateAiAgentFormPr
         <div className="space-y-1.5">
           {TOOL_CATALOG.map((tool) => (
             <label key={tool.name} className="flex items-start gap-2 text-sm">
-              <input
-                type="checkbox"
-                className="mt-1"
+              <Checkbox
+                className="mt-0.5"
                 checked={allowedTools.includes(tool.name)}
-                onChange={(event) => toggleTool(tool.name, event.target.checked)}
+                onCheckedChange={(checked) => toggleTool(tool.name, checked === true)}
               />
               <span>
                 <span className="font-medium">{tool.name}</span>{" "}

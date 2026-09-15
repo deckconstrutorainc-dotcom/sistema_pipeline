@@ -169,7 +169,7 @@ export function CreateCardForm({ pipeId, fields, requiredFieldIds, members }: Cr
                 <Label htmlFor="card-assignee">Responsável</Label>
                 <select
                   id="card-assignee"
-                  className="h-10 w-full rounded-md border border-input bg-background px-2 text-sm"
+                  className="h-8 w-full rounded-md border border-input bg-card px-2 text-ui-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   value={assigneeId}
                   onChange={(event) => setAssigneeId(event.target.value)}
                 >
