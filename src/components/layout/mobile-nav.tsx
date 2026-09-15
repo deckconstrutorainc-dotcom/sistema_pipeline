@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
 
-import { isNavItemActive, type NavItem } from "@/lib/navigation";
+import { getNavIcon, isNavItemActive, type NavItem } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 
 interface MobileNavProps {
@@ -57,6 +57,7 @@ export function MobileNav({ items }: MobileNavProps) {
             <ul className="flex flex-col gap-0.5">
               {items.map((item) => {
                 const active = isNavItemActive(item, pathname);
+                const Icon = getNavIcon(item.icon);
                 return (
                   <li key={item.href}>
                     <Link
@@ -69,7 +70,7 @@ export function MobileNav({ items }: MobileNavProps) {
                           : "text-muted-foreground hover:bg-muted hover:text-foreground",
                       )}
                     >
-                      <item.icon className="size-4 shrink-0" aria-hidden />
+                      <Icon className="size-4 shrink-0" aria-hidden />
                       {item.label}
                     </Link>
                   </li>

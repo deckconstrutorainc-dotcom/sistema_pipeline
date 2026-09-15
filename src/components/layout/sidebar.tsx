@@ -7,6 +7,7 @@ import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 
 import { Tooltip, TooltipProvider } from "@/components/ui/tooltip";
 import {
+  getNavIcon,
   isNavItemActive,
   navigationGroups,
   settingsNavItem,
@@ -19,6 +20,7 @@ const STORAGE_KEY = "koryn:sidebar-collapsed";
 function NavLink({ item, collapsed }: { item: NavItem; collapsed: boolean }) {
   const pathname = usePathname();
   const active = isNavItemActive(item, pathname);
+  const Icon = getNavIcon(item.icon);
 
   const link = (
     <Link
@@ -32,7 +34,7 @@ function NavLink({ item, collapsed }: { item: NavItem; collapsed: boolean }) {
           : "text-muted-foreground hover:bg-accent/60 hover:text-foreground",
       )}
     >
-      <item.icon className="size-4 shrink-0" aria-hidden />
+      <Icon className="size-4 shrink-0" aria-hidden />
       {collapsed ? <span className="sr-only">{item.label}</span> : <span>{item.label}</span>}
     </Link>
   );

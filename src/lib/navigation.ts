@@ -12,6 +12,35 @@ import {
 } from "lucide-react";
 
 /**
+ * Ícones por nome.
+ *
+ * Os itens de navegação são montados no servidor e entregues a componentes
+ * de cliente (Sidebar, MobileNav). Componentes React não atravessam essa
+ * fronteira — só dados serializáveis — então o item guarda a CHAVE do ícone
+ * e quem renderiza resolve o componente por aqui.
+ *
+ * Guardar o componente direto compila e passa no build, mas quebra em
+ * execução com "Functions cannot be passed directly to Client Components".
+ */
+export const navIcons = {
+  inicio: LayoutGrid,
+  tarefas: ListChecks,
+  pipes: Columns3,
+  bases: Database,
+  indicadores: BarChart3,
+  telas: Webhook,
+  ia: Sparkles,
+  agentes: Bot,
+  configuracoes: Settings,
+} as const satisfies Record<string, LucideIcon>;
+
+export type NavIconName = keyof typeof navIcons;
+
+export function getNavIcon(name: NavIconName): LucideIcon {
+  return navIcons[name];
+}
+
+/**
  * Navegação principal do Koryn Task.
  *
  * A barra anterior tinha nove itens soltos, sem ícones, misturando português
@@ -29,7 +58,8 @@ import {
 export interface NavItem {
   label: string;
   href: string;
-  icon: LucideIcon;
+  /** Chave em `navIcons` — string, para atravessar servidor → cliente. */
+  icon: NavIconName;
   /** Casa apenas a rota exata; por padrão casa também as filhas. */
   exact?: boolean;
   description?: string;
@@ -47,14 +77,14 @@ export const navigationGroups: NavGroup[] = [
       {
         label: "Início",
         href: "/dashboard",
-        icon: LayoutGrid,
+        icon: "inicio",
         exact: true,
         description: "Seu resumo do dia",
       },
       {
         label: "Minhas tarefas",
         href: "/tasks",
-        icon: ListChecks,
+        icon: "tarefas",
         description: "Tarefas atribuídas a você",
       },
     ],
@@ -65,13 +95,13 @@ export const navigationGroups: NavGroup[] = [
       {
         label: "Pipes",
         href: "/pipes",
-        icon: Columns3,
+        icon: "pipes",
         description: "Seus processos e quadros",
       },
       {
         label: "Bases de dados",
         href: "/databases",
-        icon: Database,
+        icon: "bases",
         description: "Cadastros de apoio",
       },
     ],
@@ -82,13 +112,13 @@ export const navigationGroups: NavGroup[] = [
       {
         label: "Indicadores",
         href: "/dashboards",
-        icon: BarChart3,
+        icon: "indicadores",
         description: "Painéis e relatórios",
       },
       {
         label: "Telas",
         href: "/interfaces",
-        icon: Webhook,
+        icon: "telas",
         description: "Visões personalizadas",
       },
     ],
@@ -99,13 +129,13 @@ export const navigationGroups: NavGroup[] = [
       {
         label: "Execuções de IA",
         href: "/ai-runs",
-        icon: Sparkles,
+        icon: "ia",
         description: "Histórico e aprovações",
       },
       {
         label: "Agentes",
         href: "/settings/ai-agents",
-        icon: Bot,
+        icon: "agentes",
         description: "Configuração dos agentes",
       },
     ],
@@ -116,7 +146,7 @@ export const navigationGroups: NavGroup[] = [
 export const settingsNavItem: NavItem = {
   label: "Configurações",
   href: "/settings/members",
-  icon: Settings,
+  icon: "configuracoes",
   description: "Membros, integrações e webhooks",
 };
 
@@ -132,7 +162,10 @@ export const flatNavigation: NavItem[] = [
  * Itens `exact` casam só a própria rota — `/dashboard` não deve acender
  * quando o usuário está em `/dashboards`, que é outra seção.
  */
-export function isNavItemActive(item: NavItem, pathname: string): boolean {
+export function isNavItemActive(item: NavItem, pathname: string | null): boolean {
+  // `usePathname()` pode devolver null antes da hidratação e em ambiente de
+  // teste; sem esta guarda, o `startsWith` abaixo derruba a navegação toda.
+  if (!pathname) return false;
   if (item.exact) return pathname === item.href;
   if (pathname === item.href) return true;
   return pathname.startsWith(`${item.href}/`);
