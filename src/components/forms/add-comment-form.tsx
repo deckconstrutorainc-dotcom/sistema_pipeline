@@ -43,11 +43,20 @@ export function AddCommentForm({ cardId, pipeId }: AddCommentFormProps) {
     <form className="space-y-2" onSubmit={handleSubmit(onSubmit)} noValidate>
       <input type="hidden" {...register("cardId")} />
       <input type="hidden" {...register("pipeId")} />
-      <Textarea className="min-h-20" placeholder="Escreva um comentário..." {...register("body")} />
-      {errors.body ? <p className="text-sm text-destructive">{errors.body.message}</p> : null}
-      <Button type="submit" size="sm" disabled={isSubmitting}>
-        {isSubmitting ? "Enviando..." : "Comentar"}
-      </Button>
+      <Textarea
+        className="min-h-20"
+        placeholder="Escreva um comentário… use @nome para avisar alguém"
+        {...register("body")}
+      />
+      {errors.body ? <p className="text-ui-xs text-destructive">{errors.body.message}</p> : null}
+      <div className="flex items-center gap-2">
+        <Button type="submit" size="sm" disabled={isSubmitting}>
+          {isSubmitting ? "Enviando..." : "Comentar"}
+        </Button>
+        <span className="text-ui-2xs text-muted-foreground">
+          <strong className="font-medium">@nome</strong> notifica a pessoa
+        </span>
+      </div>
       {formError ? <p className="text-sm text-destructive">{formError}</p> : null}
     </form>
   );

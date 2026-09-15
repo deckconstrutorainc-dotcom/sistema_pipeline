@@ -5,6 +5,7 @@ import { SendEmailForm } from "@/components/forms/send-email-form";
 import { GenerateDocumentButton } from "@/components/forms/generate-document-button";
 import { TriggerAiRunForm } from "@/components/forms/trigger-ai-run-form";
 import { CardAssigneesPanel } from "@/components/cards/card-assignees-panel";
+import { CardCollaboratorsPanel } from "@/components/cards/card-collaborators-panel";
 import { CardConnectionsSection } from "@/components/cards/card-connections-section";
 import { CardDueDatePanel } from "@/components/cards/card-due-date-panel";
 import { CardLabelsPanel } from "@/components/cards/card-labels-panel";
@@ -20,6 +21,7 @@ import { listAiRunsForCard } from "@/server/actions/ai-runs";
 import { getCardDetail, listChecklistItems } from "@/server/queries/cards";
 import { listDocumentTemplatesForPipe, listGeneratedDocumentsForCard } from "@/server/queries/documents";
 import { getEmailThreadsForCard } from "@/server/queries/email";
+import { listCardCollaborators } from "@/server/queries/collaborators";
 import { listOrganizationMembersForAssignment } from "@/server/queries/organizations";
 import { getPipeBoardData } from "@/server/queries/pipes";
 
@@ -75,7 +77,7 @@ export default async function CardDetailPage({ params }: CardPageProps) {
   const organization = await requireActiveOrganization();
 
   const [card, board] = await Promise.all([getCardDetail(cardId), getPipeBoardData(pipeId)]);
-  const [emailThreads, documentTemplates, generatedDocuments, aiAgents, aiRuns, checklistItems, members] =
+  const [emailThreads, documentTemplates, generatedDocuments, aiAgents, aiRuns, checklistItems, members, collaborators] =
     card
       ? await Promise.all([
           getEmailThreadsForCard(card.id),
@@ -87,8 +89,9 @@ export default async function CardDetailPage({ params }: CardPageProps) {
           // Todos os membros atribuíveis, não apenas os já responsáveis: o
           // painel precisa da lista completa para oferecer quem adicionar.
           listOrganizationMembersForAssignment(organization.id),
+          listCardCollaborators(card.id),
         ])
-      : [[], [], [], [], [], [], []];
+      : [[], [], [], [], [], [], [], []];
 
   const availableAiAgents = aiAgents.filter(
     (agent) => agent.isActive && (agent.pipeId === null || agent.pipeId === pipeId),
@@ -406,6 +409,17 @@ export default async function CardDetailPage({ params }: CardPageProps) {
             pipeId={pipeId}
             labelIds={card.labelIds}
             labels={board.labels}
+            readOnly={!canEditCard}
+          />
+        </section>
+
+        <section className="space-y-2">
+          <h2 className="text-ui-md font-semibold">Ajuda de outro setor</h2>
+          <CardCollaboratorsPanel
+            cardId={card.id}
+            pipeId={pipeId}
+            collaborators={collaborators}
+            members={members.filter((m) => !card.assigneeIds.includes(m.id))}
             readOnly={!canEditCard}
           />
         </section>
