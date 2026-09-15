@@ -59,6 +59,20 @@ export const archiveCardSchema = z.object({
 });
 export type ArchiveCardInput = z.infer<typeof archiveCardSchema>;
 
+/**
+ * Exclusão permanente de card.
+ *
+ * `confirmNumber` é o número que o usuário digitou para confirmar. A
+ * comparação com o número real acontece no servidor: validar só na
+ * interface não impediria uma chamada direta à action.
+ */
+export const deleteCardSchema = z.object({
+  cardId: z.string().uuid("Card inválido."),
+  pipeId: z.string().uuid("Pipe inválido."),
+  confirmNumber: z.number().int().positive("Confirme o número do card."),
+});
+export type DeleteCardInput = z.infer<typeof deleteCardSchema>;
+
 // ---------------------------------------------------------------------
 // Lógica pura de validação de campos obrigatórios por fase.
 //

@@ -88,6 +88,7 @@ export default async function PipeKanbanPage({ params }: PipePageProps) {
           labels={board.labels}
           canManagePhases={canManagePhases}
           currentUserId={user.id}
+          canDelete={canManagePhases}
         />
       )}
     </div>

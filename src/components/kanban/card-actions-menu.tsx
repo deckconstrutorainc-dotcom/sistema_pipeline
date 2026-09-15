@@ -8,9 +8,11 @@ import {
   ArrowRight,
   ExternalLink,
   MoreHorizontal,
+  Trash2,
   UserPlus,
 } from "lucide-react";
 
+import { DeleteCardDialog } from "@/components/cards/delete-card-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,22 +39,30 @@ import type { PhaseSummary } from "@/server/queries/pipes";
 export function CardActionsMenu({
   cardId,
   pipeId,
+  cardNumber,
+  cardTitle,
   currentPhaseId,
   phases,
   currentUserId,
   isAssignedToMe,
+  canDelete = false,
   onError,
 }: {
   cardId: string;
   pipeId: string;
+  cardNumber: number;
+  cardTitle: string;
   currentPhaseId: string;
   phases: PhaseSummary[];
   currentUserId: string | null;
   isAssignedToMe: boolean;
+  /** Só admin/super_admin exclui — a policy decide, isto é a dica visual. */
+  canDelete?: boolean;
   onError?: (message: string) => void;
 }) {
   const router = useRouter();
   const [pending, setPending] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   function report(message: string) {
     if (onError) onError(message);
@@ -157,11 +167,27 @@ export function CardActionsMenu({
 
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem variant="destructive" onSelect={() => void handleArchive()}>
+        <DropdownMenuItem onSelect={() => void handleArchive()}>
           <Archive className="size-3.5" aria-hidden />
           Arquivar
         </DropdownMenuItem>
+
+        {canDelete ? (
+          <DropdownMenuItem variant="destructive" onSelect={() => setDeleteOpen(true)}>
+            <Trash2 className="size-3.5" aria-hidden />
+            Excluir
+          </DropdownMenuItem>
+        ) : null}
       </DropdownMenuContent>
+
+      <DeleteCardDialog
+        cardId={cardId}
+        pipeId={pipeId}
+        cardNumber={cardNumber}
+        cardTitle={cardTitle}
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+      />
     </DropdownMenu>
   );
 }

@@ -20,6 +20,7 @@ interface ColumnProps {
   labelsById: Map<string, LabelSummary>;
   canManagePhases: boolean;
   currentUserId?: string | null;
+  canDelete?: boolean;
   onActionError?: (message: string) => void;
 }
 
@@ -31,6 +32,7 @@ export function KanbanColumn({
   labelsById,
   canManagePhases,
   currentUserId,
+  canDelete,
   onActionError,
 }: ColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id: phase.id, data: { phaseId: phase.id } });
@@ -121,6 +123,7 @@ export function KanbanColumn({
               phase={phase}
               phases={phases}
               currentUserId={currentUserId}
+              canDelete={canDelete}
               onActionError={onActionError}
             />
           ))

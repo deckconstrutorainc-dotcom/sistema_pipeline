@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import {
   addCommentSchema,
   archiveCardSchema,
+  deleteCardSchema,
   assignUserSchema,
   cardLabelSchema,
   createCardSchema,
@@ -14,6 +15,7 @@ import {
   unassignUserSchema,
   updateCardFieldsSchema,
   type AddCommentInput,
+  type DeleteCardInput,
   type ArchiveCardInput,
   type AssignUserInput,
   type CardLabelInput,
@@ -352,6 +354,68 @@ export async function archiveCard(input: ArchiveCardInput): Promise<ActionResult
     parsed.data.isArchived ? "card_archived" : "card_unarchived",
     {},
   );
+  revalidatePath(`/pipes/${parsed.data.pipeId}`);
+  return { success: true };
+}
+
+/**
+ * Exclui um card permanentemente.
+ *
+ * Apagar cascateia em comentários, anexos, checklist, histórico e conexões
+ * com cards de outros setores. Por isso:
+ *
+ * - só admin/super_admin passa (policy `cards_delete`);
+ * - o número digitado precisa bater com o do card, conferido aqui no
+ *   servidor — a confirmação na tela sozinha não protegeria de uma chamada
+ *   direta à action;
+ * - a exclusão fica registrada como `card.deleted` em `domain_events`, que
+ *   sobrevive ao card (o histórico em `card_activities` some junto com ele).
+ *
+ * O caminho normal para tirar um card do quadro continua sendo arquivar.
+ */
+export async function deleteCard(input: DeleteCardInput): Promise<ActionResult> {
+  const parsed = deleteCardSchema.safeParse(input);
+  if (!parsed.success) {
+    return { success: false, error: parsed.error.issues[0]?.message ?? "Dados inválidos." };
+  }
+
+  await requireAuth();
+  const supabase = await createClient();
+
+  // Confere o número no servidor. Também serve de checagem de existência:
+  // se a RLS esconder o card, não há linha para comparar.
+  const { data: card, error: readError } = await supabase
+    .from("cards")
+    .select("number")
+    .eq("id", parsed.data.cardId)
+    .eq("pipe_id", parsed.data.pipeId)
+    .maybeSingle();
+
+  if (readError) return { success: false, error: readError.message };
+  if (!card) return { success: false, error: "Card não encontrado." };
+
+  if ((card as { number: number }).number !== parsed.data.confirmNumber) {
+    return { success: false, error: "O número informado não corresponde a este card." };
+  }
+
+  const { error, count } = await supabase
+    .from("cards")
+    .delete({ count: "exact" })
+    .eq("id", parsed.data.cardId)
+    .eq("pipe_id", parsed.data.pipeId);
+
+  if (error) return { success: false, error: error.message };
+
+  // A RLS filtra silenciosamente: sem permissão, o delete não erra, apenas
+  // não afeta nenhuma linha. Sem esta checagem, a tela diria "excluído" e o
+  // card continuaria lá.
+  if (count === 0) {
+    return {
+      success: false,
+      error: "Você não tem permissão para excluir cards. Apenas administradores podem.",
+    };
+  }
+
   revalidatePath(`/pipes/${parsed.data.pipeId}`);
   return { success: true };
 }

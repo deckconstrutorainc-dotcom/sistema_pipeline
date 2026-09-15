@@ -34,6 +34,8 @@ interface CardTileProps {
   /** Todas as fases do pipe, para o submenu "Mover para". */
   phases?: PhaseSummary[];
   currentUserId?: string | null;
+  /** Só admin exclui — a policy decide, isto é a dica visual. */
+  canDelete?: boolean;
   onActionError?: (message: string) => void;
   isDragOverlay?: boolean;
 }
@@ -100,6 +102,7 @@ export function CardTile({
   phase,
   phases,
   currentUserId,
+  canDelete = false,
   onActionError,
   isDragOverlay = false,
 }: CardTileProps) {
@@ -190,12 +193,15 @@ export function CardTile({
             <CardActionsMenu
               cardId={card.id}
               pipeId={pipeId}
+              cardNumber={card.number}
+              cardTitle={card.title}
               currentPhaseId={card.currentPhaseId}
               phases={phases}
               currentUserId={currentUserId ?? null}
               isAssignedToMe={
                 currentUserId ? card.assignees.some((a) => a.id === currentUserId) : false
               }
+              canDelete={canDelete}
               onError={onActionError}
             />
           ) : null}

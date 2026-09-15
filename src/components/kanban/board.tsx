@@ -25,6 +25,8 @@ interface KanbanBoardProps {
   canManagePhases?: boolean;
   /** Habilita "Atribuir a mim" no menu de ações do card. */
   currentUserId?: string | null;
+  /** Admin da organização: habilita a exclusão no menu do card. */
+  canDelete?: boolean;
 }
 
 export function KanbanBoard({
@@ -34,6 +36,7 @@ export function KanbanBoard({
   labels,
   canManagePhases = false,
   currentUserId = null,
+  canDelete = false,
 }: KanbanBoardProps) {
   const router = useRouter();
   const [cards, setCards] = useState(initialCards);
@@ -147,6 +150,7 @@ export function KanbanBoard({
                 labelsById={labelsById}
                 canManagePhases={canManagePhases}
                 currentUserId={currentUserId}
+                canDelete={canDelete}
                 onActionError={showError}
               />
             ))}
