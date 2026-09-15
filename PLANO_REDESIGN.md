@@ -81,10 +81,25 @@ criado. Concluída.
 - Os `<select>` seguem nativos por usarem `{...register}` do react-hook-form;
   o Radix Select exigiria `<Controller>` em cada um
 
-### Fase 5 — Loading, empty states, erros, quick view, performance
-- Skeletons por rota, empty states com ação, toasts
-- Drawer lateral do card
-- Paginação incremental no board
+### Fase 5 — Loading, empty states, erros — concluída
+- 10 `loading.tsx` (eram 3), com silhueta própria por tipo de tela
+- `(app)/error.tsx` captura falhas sem derrubar a navegação
+- Toasts substituem o aviso inline do quadro, que sumia no scroll
+- Estados vazios explicam o que fazer, não só que está vazio
+
+## Pendências conhecidas
+
+- **SLA impreciso**: usa `cards.updated_at` como aproximação da entrada na
+  fase, então editar um card reinicia o prazo. Exige coluna
+  `phase_entered_at` real e calendário de horário útil.
+- **Anexos**: só metadados; falta integrar o Supabase Storage.
+- **E-mail e notificações**: registram no console, sem provedor real.
+- **Worker**: a fila de jobs depende de cron; no plano Hobby da Vercel é
+  1×/dia. Alternativa: `pg_cron` do Supabase.
+- **Testes E2E**: existem como esqueleto, quase todos `test.skip`.
+- **Não feito nesta rodada**: drawer lateral do card, paginação incremental
+  no quadro (hoje carrega todos os cards do pipe de uma vez), busca e
+  filtros no quadro, favoritos de pipe.
 
 ## Regras herdadas do CLAUDE.md
 
