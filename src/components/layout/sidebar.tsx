@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 
+import { Avatar } from "@/components/ui/avatar";
 import { Tooltip, TooltipProvider } from "@/components/ui/tooltip";
 import {
   getNavIcon,
@@ -58,7 +59,13 @@ function NavLink({ item, collapsed }: { item: NavItem; collapsed: boolean }) {
  * Substitui a barra horizontal de nove links de texto, que o próprio código
  * marcava como provisória.
  */
-export function Sidebar() {
+export function Sidebar({
+  user,
+  organizationName,
+}: {
+  user?: { email: string | null; id: string };
+  organizationName?: string | null;
+} = {}) {
   const [collapsed, setCollapsed] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -160,6 +167,27 @@ export function Sidebar() {
             )}
           </button>
         </div>
+
+        {/* Usuário no rodapé, como no modelo — identifica de quem é a sessão
+            sem competir com a navegação. */}
+        {user ? (
+          <div
+            className={cn(
+              "flex shrink-0 items-center gap-2 border-t p-2.5",
+              isCollapsed && "justify-center p-2",
+            )}
+          >
+            <Avatar name={user.email} seed={user.id} size={isCollapsed ? "sm" : "md"} />
+            {!isCollapsed ? (
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-ui-sm font-medium">{user.email}</p>
+                {organizationName ? (
+                  <p className="truncate text-ui-2xs text-muted-foreground">{organizationName}</p>
+                ) : null}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
       </aside>
     </TooltipProvider>
   );

@@ -51,22 +51,28 @@ export function KanbanColumn({
         // ficar espremido; a partir de `sm` volta para a largura fixa de
         // desktop. `snap-start` funciona com o `snap-x` do board (scroll
         // horizontal "prende" em cada coluna, comum em Kanban mobile).
-        "flex w-[85vw] shrink-0 snap-start flex-col overflow-hidden rounded-lg border bg-column transition-colors sm:w-[300px]",
-        isOver && "ring-2 ring-primary ring-offset-1",
+        "flex w-[85vw] shrink-0 snap-start flex-col rounded-lg transition-colors sm:w-[302px]",
+        // A coluna não tem moldura própria: o que a delimita é o espaço e o
+        // fundo do quadro. Só ao arrastar sobre ela é que ganha contorno.
+        isOver && "bg-primary/[0.06] ring-2 ring-primary/40",
       )}
     >
-      {/* Faixa sólida no topo: é o que dá a leitura colorida do quadro
-          inteiro de relance. */}
-      <div className={cn("h-1 shrink-0", color.bar)} aria-hidden />
-
-      <div className="sticky top-0 z-10 flex items-center justify-between gap-2 border-b bg-column-header px-2.5 py-2">
+      <div className="sticky top-0 z-10 flex items-center justify-between gap-2 rounded-t-lg bg-board/95 px-1 py-2 backdrop-blur-sm">
         <div className="flex min-w-0 items-center gap-1.5">
-          {canManagePhases ? (
-            <PhaseColorPicker phaseId={phase.id} pipeId={pipeId} currentColor={phase.color} />
-          ) : (
-            <span className={cn("size-2.5 shrink-0 rounded-full", color.bar)} aria-hidden />
-          )}
-          <span className="truncate text-ui-md font-semibold">{phase.name}</span>
+          {/* Etiqueta com o nome da fase na própria cor — é o que dá a
+              leitura colorida do quadro de relance. */}
+          <span
+            className={cn(
+              "truncate rounded-md px-2 py-1 text-ui-sm font-semibold",
+              color.soft,
+              color.text,
+            )}
+          >
+            {phase.name}
+          </span>
+          <span className="tabular shrink-0 text-ui-sm font-semibold text-muted-foreground">
+            {cards.length}
+          </span>
           {phase.isFinal ? (
             <Tooltip content="Fase final do processo">
               <Flag className="size-3 shrink-0 text-muted-foreground" aria-hidden />
@@ -76,35 +82,29 @@ export function KanbanColumn({
 
         <div className="flex shrink-0 items-center gap-1">
           {breachedCount > 0 ? (
-            <Tooltip content={`${breachedCount} card(s) com SLA excedido`}>
+            <Tooltip content={`${breachedCount} atividade(s) com prazo da fase excedido`}>
               <span className="tabular flex items-center gap-0.5 rounded bg-destructive/12 px-1.5 py-0.5 text-ui-2xs font-semibold text-destructive">
                 <AlarmClock className="size-3" aria-hidden />
                 {breachedCount}
               </span>
             </Tooltip>
           ) : null}
-          <span
-            className={cn(
-              "tabular rounded px-1.5 py-0.5 text-ui-2xs font-semibold",
-              color.soft,
-              color.text,
-            )}
-          >
-            {cards.length}
-          </span>
+          {canManagePhases ? (
+            <PhaseColorPicker phaseId={phase.id} pipeId={pipeId} currentColor={phase.color} />
+          ) : null}
         </div>
       </div>
 
       {phase.slaHours ? (
-        <div className="shrink-0 border-b bg-column-header/60 px-2.5 py-1 text-ui-2xs text-muted-foreground">
-          SLA {phase.slaHours}h
-        </div>
+        <p className="shrink-0 px-1 pb-1.5 text-ui-2xs text-muted-foreground">
+          Prazo da fase: {phase.slaHours}h
+        </p>
       ) : null}
 
-      <div className="flex flex-1 flex-col gap-1.5 overflow-y-auto p-1.5" style={{ minHeight: 80 }}>
+      <div className="flex flex-1 flex-col gap-2 px-1 pb-2" style={{ minHeight: 80 }}>
         {cards.length === 0 ? (
-          <p className="p-3 text-center text-ui-xs text-muted-foreground">
-            Nenhum card nesta fase.
+          <p className="rounded-lg border border-dashed border-border/60 p-4 text-center text-ui-xs text-muted-foreground">
+            Nenhuma atividade
           </p>
         ) : (
           cards.map((card) => (

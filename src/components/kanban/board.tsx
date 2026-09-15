@@ -5,6 +5,12 @@ import { useRouter } from "next/navigation";
 import { DndContext, DragOverlay, PointerSensor, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
 
 import { CardTile } from "@/components/kanban/card-tile";
+import {
+  applyBoardFilters,
+  BoardToolbar,
+  EMPTY_FILTERS,
+  type BoardFilters,
+} from "@/components/kanban/board-toolbar";
 import { KanbanColumn } from "@/components/kanban/column";
 import { useToast } from "@/components/ui/toast";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -31,6 +37,7 @@ export function KanbanBoard({
 }: KanbanBoardProps) {
   const router = useRouter();
   const [cards, setCards] = useState(initialCards);
+  const [filters, setFilters] = useState<BoardFilters>(EMPTY_FILTERS);
   const [activeCardId, setActiveCardId] = useState<string | null>(null);
   // Erros viram toast: o aviso inline ficava acima do quadro e podia estar
   // fora da área visível depois do scroll horizontal das colunas.
@@ -39,16 +46,33 @@ export function KanbanBoard({
 
   const labelsById = useMemo(() => new Map(labels.map((l) => [l.id, l])), [labels]);
 
+  const visibleCards = useMemo(
+    () => applyBoardFilters(cards, filters, currentUserId),
+    [cards, filters, currentUserId],
+  );
+
+  // Todas as pessoas atribuídas em algum card do pipe — é a lista que o
+  // filtro por responsável oferece.
+  const people = useMemo(() => {
+    const byId = new Map<string, { id: string; fullName: string | null }>();
+    for (const card of cards) {
+      for (const person of card.assignees) byId.set(person.id, person);
+    }
+    return [...byId.values()].sort((a, b) =>
+      (a.fullName ?? "").localeCompare(b.fullName ?? "", "pt-BR"),
+    );
+  }, [cards]);
+
   const cardsByPhase = useMemo(() => {
     const map = new Map<string, CardSummary[]>();
     for (const phase of phases) map.set(phase.id, []);
-    for (const card of cards) {
+    for (const card of visibleCards) {
       const list = map.get(card.currentPhaseId);
       if (list) list.push(card);
       else map.set(card.currentPhaseId, [card]);
     }
     return map;
-  }, [cards, phases]);
+  }, [visibleCards, phases]);
 
   const activeCard = activeCardId ? cards.find((c) => c.id === activeCardId) ?? null : null;
 
@@ -90,7 +114,17 @@ export function KanbanBoard({
     // do card (checklist, comentários, SLA) precisam de um provider comum
     // para compartilhar o atraso de abertura.
     <TooltipProvider delayDuration={300} skipDelayDuration={150}>
-      <div className="space-y-2">
+      <div className="space-y-2.5">
+        <BoardToolbar
+          filters={filters}
+          onChange={setFilters}
+          labels={labels}
+          people={people}
+          total={cards.length}
+          visible={visibleCards.length}
+          currentUserId={currentUserId}
+        />
+
         <DndContext
           sensors={sensors}
           onDragStart={(event) => setActiveCardId(event.active.id as string)}

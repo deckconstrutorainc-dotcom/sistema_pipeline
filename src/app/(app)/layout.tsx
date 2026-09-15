@@ -30,7 +30,10 @@ export default async function AppLayout({
       <div className="flex min-h-screen">
         {/* Sidebar persistente a partir de `lg`; abaixo disso a navegação
             vive no menu compacto da topbar. */}
-        <Sidebar />
+        <Sidebar
+          user={{ email: user.email ?? null, id: user.id }}
+          organizationName={activeOrganization?.name ?? null}
+        />
 
         <div className="flex min-w-0 flex-1 flex-col">
           <header className="sticky top-0 z-30 flex h-12 shrink-0 items-center justify-between gap-2 border-b bg-card px-3 sm:px-4">
@@ -59,12 +62,9 @@ export default async function AppLayout({
 
               <NotificationsBell items={notifications} unreadCount={unreadCount} />
 
-              <div className="flex items-center gap-1.5">
-                <Avatar name={user.email ?? null} seed={user.id} size="sm" />
-                <span className="hidden max-w-40 truncate text-ui-sm text-muted-foreground lg:inline">
-                  {user.email}
-                </span>
-              </div>
+              {/* Avatar só abaixo de `lg`: a partir daí quem identifica a
+                  sessão é o rodapé da sidebar. */}
+              <Avatar name={user.email ?? null} seed={user.id} size="sm" className="lg:hidden" />
 
               <form action={signOut}>
                 <Button type="submit" variant="outline" size="sm">

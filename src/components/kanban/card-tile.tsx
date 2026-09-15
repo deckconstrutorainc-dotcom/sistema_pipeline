@@ -125,8 +125,8 @@ export function CardTile({
     .map((id) => labelsById.get(id))
     .filter((label): label is LabelSummary => Boolean(label));
 
-  // A borda esquerda herda a cor da primeira label: dá varredura visual
-  // imediata na coluna sem poluir o cartão.
+  // Bolinha ao lado do título, na cor da primeira etiqueta: dá varredura
+  // visual imediata na coluna sem poluir o cartão.
   const accentColor = labels[0]?.color ?? null;
 
   const hasChecklist = card.checklistTotal > 0;
@@ -135,10 +135,7 @@ export function CardTile({
   return (
     <div
       ref={setNodeRef}
-      style={{
-        ...style,
-        ...(accentColor ? { borderLeftColor: accentColor, borderLeftWidth: 3 } : {}),
-      }}
+      style={style}
       {...attributes}
       {...listeners}
       className={cn(
@@ -147,18 +144,28 @@ export function CardTile({
         // navegador — necessário para o drag-and-drop (dnd-kit
         // `PointerSensor`, que já cobre mouse e touch) funcionar bem em
         // celular.
-        "group cursor-grab touch-none space-y-1.5 rounded-md border border-tile-border bg-tile p-2.5 shadow-sm transition-all hover:-translate-y-px hover:shadow-md active:cursor-grabbing",
+        "group cursor-grab touch-none space-y-2 rounded-lg border border-tile-border bg-tile p-3 shadow-[0_1px_2px_rgba(16,24,40,0.05)] transition-all hover:-translate-y-px hover:border-border hover:shadow-[0_4px_16px_-4px_rgba(16,24,40,0.12)] active:cursor-grabbing",
         (isDragging || isDragOverlay) && "rotate-1 opacity-90 shadow-lg ring-2 ring-ring",
       )}
     >
+      {/* Cabeçalho: bolinha da etiqueta + título, número e menu. */}
       <div className="flex items-start justify-between gap-2">
-        <Link
-          href={`/pipes/${pipeId}/cards/${card.id}`}
-          onClick={(e) => e.stopPropagation()}
-          className="text-ui-md font-medium leading-snug hover:underline"
-        >
-          {card.title}
-        </Link>
+        <div className="flex min-w-0 items-start gap-1.5">
+          {accentColor ? (
+            <span
+              className="mt-1 size-2 shrink-0 rounded-full"
+              style={{ backgroundColor: accentColor }}
+              aria-hidden
+            />
+          ) : null}
+          <Link
+            href={`/pipes/${pipeId}/cards/${card.id}`}
+            onClick={(e) => e.stopPropagation()}
+            className="text-ui-md font-semibold leading-snug hover:underline"
+          >
+            {card.title}
+          </Link>
+        </div>
         <div className="flex shrink-0 items-center gap-0.5">
           <span className="tabular text-ui-2xs text-muted-foreground">#{card.number}</span>
           {phases && !isDragOverlay ? (
@@ -177,12 +184,32 @@ export function CardTile({
         </div>
       </div>
 
+      {/* Campos resumidos numa linha só, separados por ponto — o formato
+          "valor · data" do modelo. Duas linhas empilhadas ocupavam altura
+          demais e faziam caber menos cards na coluna. */}
+      {card.summaryFields.length > 0 ? (
+        <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-ui-xs text-muted-foreground">
+          {card.summaryFields.map((f, index) => {
+            const Icon = fieldTypeIcons[f.type] ?? Type;
+            return (
+              <span key={f.fieldId} className="flex items-center gap-1" title={f.label}>
+                {index > 0 ? <span className="text-muted-foreground/50">·</span> : null}
+                <Icon className="size-3 shrink-0" aria-hidden />
+                <span className="truncate">{formatSummaryFieldValue(f.type, f.value)}</span>
+              </span>
+            );
+          })}
+        </div>
+      ) : null}
+
+      {/* Etiquetas como pílulas, separadas do conteúdo por uma divisória —
+          é o rodapé de categoria do modelo. */}
       {labels.length > 0 ? (
-        <div className="flex flex-wrap gap-1">
+        <div className="flex flex-wrap gap-1 border-t border-border/60 pt-2">
           {labels.map((label) => (
             <span
               key={label.id}
-              className="rounded border px-1.5 py-px text-ui-2xs font-medium"
+              className="rounded-md border px-1.5 py-0.5 text-ui-2xs font-medium"
               style={getLabelStyle(label.color)}
             >
               {label.name}
@@ -191,25 +218,7 @@ export function CardTile({
         </div>
       ) : null}
 
-      {card.summaryFields.length > 0 ? (
-        <div className="space-y-0.5">
-          {card.summaryFields.map((f) => {
-            const Icon = fieldTypeIcons[f.type] ?? Type;
-            return (
-              <div
-                key={f.fieldId}
-                className="flex items-center gap-1.5 text-ui-xs text-muted-foreground"
-                title={f.label}
-              >
-                <Icon className="size-3 shrink-0" aria-hidden />
-                <span className="truncate">{formatSummaryFieldValue(f.type, f.value)}</span>
-              </div>
-            );
-          })}
-        </div>
-      ) : null}
-
-      <div className="flex items-center justify-between gap-2 pt-0.5">
+      <div className="flex items-center justify-between gap-2">
         {card.assignees.length === 0 ? (
           <span className="text-ui-2xs text-muted-foreground">Sem responsável</span>
         ) : (
