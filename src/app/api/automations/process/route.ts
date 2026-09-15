@@ -83,6 +83,15 @@ export async function POST(request: Request) {
     ? `erro: ${slaResult.error.message}`
     : (slaResult.data as number);
 
+  // Avisos in-app de prazo (card_due_soon / card_overdue) para os
+  // participantes — ver create_deadline_notifications() na migration de
+  // notificações. Independente dos domain_events acima: aquilo alimenta
+  // automações, isto alimenta o sino do usuário.
+  const deadlineResult = await admin.rpc("create_deadline_notifications");
+  periodicChecks.deadline_notifications_created = deadlineResult.error
+    ? `erro: ${deadlineResult.error.message}`
+    : (deadlineResult.data as number);
+
   const { data: jobs, error: dequeueError } = await admin.rpc("dequeue_jobs", {
     p_job_type: "automation_run",
     p_limit: JOB_BATCH_LIMIT,

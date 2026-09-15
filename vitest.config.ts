@@ -22,16 +22,23 @@ export default defineConfig({
     // nova de Postgres real via `@electric-sql/pglite` (WASM) em `beforeAll`
     // — ver `tests/integration/setup/pglite-supabase.ts`. O default do
     // Vitest (pool "threads", até `os.cpus().length` workers) tenta rodar
-    // TODOS os ~9 arquivos que usam o harness em paralelo, ou seja, até 9
-    // Postgres/WASM completos carregados em memória ao mesmo tempo — em
-    // máquinas/CI com menos memória disponível isso derruba um worker por
-    // OOM de forma intermitente (achado ao rodar a suíte real repetidas
-    // vezes). Limitar a no máximo 2 arquivos concorrentes elimina o pico de
-    // memória de forma determinística sem tornar a suíte sequencial (o que
-    // seria desnecessariamente lento) — testado repetidamente sem crash.
+    // todos os arquivos do harness em paralelo, ou seja, vários
+    // Postgres/WASM completos em memória ao mesmo tempo, e derruba workers
+    // com "Fatal process out of memory".
+    //
+    // `maxThreads: 2` bastava com 9 arquivos de integração. Ao chegar ao
+    // décimo (notifications), voltaram os OOMs — e a máquina tem 17 GB
+    // livres, então o limite não é a RAM: é o heap POR WORKER do V8, que
+    // cada instância de PGlite consome quase inteiro.
+    //
+    // `fileParallelism: false` serializa os arquivos de verdade (os `it()`
+    // dentro de cada um já eram sequenciais), de modo que só existe um
+    // Postgres/WASM vivo por vez. `maxThreads: 1` reforça isso para o caso
+    // de a flag ser sobrescrita na linha de comando.
+    fileParallelism: false,
     poolOptions: {
       threads: {
-        maxThreads: 2,
+        maxThreads: 1,
         minThreads: 1,
       },
     },

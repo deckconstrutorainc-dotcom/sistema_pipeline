@@ -1,5 +1,6 @@
 import {
   BarChart3,
+  Bell,
   Bot,
   Columns3,
   Database,
@@ -25,6 +26,7 @@ import {
 export const navIcons = {
   inicio: LayoutGrid,
   tarefas: ListChecks,
+  notificacoes: Bell,
   pipes: Columns3,
   bases: Database,
   indicadores: BarChart3,
@@ -86,6 +88,12 @@ export const navigationGroups: NavGroup[] = [
         href: "/tasks",
         icon: "tarefas",
         description: "Tarefas atribuídas a você",
+      },
+      {
+        label: "Notificações",
+        href: "/notifications",
+        icon: "notificacoes",
+        description: "Avisos de atribuição, prazo e comentários",
       },
     ],
   },

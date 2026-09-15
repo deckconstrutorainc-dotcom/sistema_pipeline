@@ -1,4 +1,5 @@
 import { MobileNav } from "@/components/layout/mobile-nav";
+import { NotificationsBell } from "@/components/layout/notifications-bell";
 import { OrgSwitcher } from "@/components/layout/org-switcher";
 import { Sidebar } from "@/components/layout/sidebar";
 import { Avatar } from "@/components/ui/avatar";
@@ -7,6 +8,7 @@ import { ToastProvider } from "@/components/ui/toast";
 import { flatNavigation } from "@/lib/navigation";
 import { getActiveOrganization, listUserOrganizations, requireAuth } from "@/lib/auth/session";
 import { signOut } from "@/server/actions/auth";
+import { countUnreadNotifications, listNotifications } from "@/server/queries/notifications";
 
 export default async function AppLayout({
   children,
@@ -14,8 +16,12 @@ export default async function AppLayout({
   children: React.ReactNode;
 }) {
   const user = await requireAuth();
-  const organizations = await listUserOrganizations();
-  const activeOrganization = await getActiveOrganization();
+  const [organizations, activeOrganization, notifications, unreadCount] = await Promise.all([
+    listUserOrganizations(),
+    getActiveOrganization(),
+    listNotifications(8),
+    countUnreadNotifications(),
+  ]);
 
   return (
     <ToastProvider>
@@ -44,6 +50,8 @@ export default async function AppLayout({
                   {activeOrganization.name}
                 </span>
               ) : null}
+
+              <NotificationsBell items={notifications} unreadCount={unreadCount} />
 
               <div className="flex items-center gap-1.5">
                 <Avatar name={user.email ?? null} seed={user.id} size="sm" />
