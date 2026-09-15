@@ -135,6 +135,68 @@
     --tile-border: 232 16% 24%;
   }
 
+  /*
+   * Telas de autenticação e página de entrada.
+   *
+   * Elas têm tema escuro fixo, enquanto a aplicação é clara. Em vez de
+   * reescrever Input, Label e Button para cada uma, os tokens semânticos
+   * são redefinidos aqui dentro — os componentes do design system passam a
+   * renderizar escuros sem nenhuma alteração própria.
+   *
+   * Não é o bloco `.dark` (que é o tema escuro global, ainda não ativado):
+   * este escopo vale só para `#landing`.
+   */
+  #landing {
+    --background: 232 24% 6%;
+    --foreground: 228 20% 94%;
+
+    /* O cartão é mais claro que o fundo da página; os campos, definidos
+       abaixo, ficam entre os dois. */
+    --card: 232 22% 13%;
+    --card-foreground: 228 20% 94%;
+
+    --popover: 232 22% 14%;
+    --popover-foreground: 228 20% 94%;
+
+    --primary: 230 89% 66%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 232 20% 18%;
+    --secondary-foreground: 228 20% 94%;
+
+    --muted: 232 18% 17%;
+    --muted-foreground: 228 12% 68%;
+
+    --accent: 234 30% 22%;
+    --accent-foreground: 228 96% 88%;
+
+    --destructive: 0 72% 62%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 232 16% 24%;
+    --input: 232 18% 28%;
+    --ring: 230 89% 66%;
+  }
+
+  /*
+   * Campos de formulário na área escura.
+   *
+   * `Input`, `Textarea` e `select` usam `bg-card`, que aqui é a mesma cor
+   * do cartão que os contém — ficariam invisíveis. Este bloco dá a eles um
+   * fundo mais escuro que a superfície, que é a convenção de caixa de
+   * digitação em tema escuro.
+   */
+  #landing input:not([type="checkbox"]):not([type="radio"]),
+  #landing textarea,
+  #landing select {
+    background-color: hsl(232 24% 9%);
+  }
+
+  #landing input::placeholder,
+  #landing textarea::placeholder {
+    color: hsl(228 12% 52%);
+  }
+
   * {
     @apply border-border;
   }

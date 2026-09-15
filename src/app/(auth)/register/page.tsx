@@ -1,15 +1,10 @@
 import { SignUpForm } from "@/components/forms/signup-form";
+import { AuthCard } from "@/components/layout/auth-card";
 
 export default function RegisterPage() {
   return (
-    <div className="space-y-6 rounded-lg border bg-card p-6 shadow-sm">
-      <div className="space-y-1 text-center">
-        <h1 className="text-xl font-semibold tracking-tight">Criar conta</h1>
-        <p className="text-sm text-muted-foreground">
-          Cadastre-se para começar a usar o Koryn Task.
-        </p>
-      </div>
+    <AuthCard title="Criar conta" description="Cadastre-se para começar a usar o Koryn Task.">
       <SignUpForm />
-    </div>
+    </AuthCard>
   );
 }
