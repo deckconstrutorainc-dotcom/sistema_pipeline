@@ -42,85 +42,85 @@ export const PHASE_COLORS: Record<string, PhaseColorTokens> = {
   "#3B82F6": {
     name: "Azul",
     bar: "bg-blue-500",
-    soft: "bg-blue-100",
-    text: "text-blue-800",
+    soft: "bg-blue-100 dark:bg-blue-500/15",
+    text: "text-blue-800 dark:text-blue-300",
     ring: "ring-blue-400",
   },
   "#06B6D4": {
     name: "Ciano",
     bar: "bg-cyan-500",
-    soft: "bg-cyan-100",
-    text: "text-cyan-900",
+    soft: "bg-cyan-100 dark:bg-cyan-500/15",
+    text: "text-cyan-900 dark:text-cyan-300",
     ring: "ring-cyan-400",
   },
   "#0D9488": {
     name: "Teal",
     bar: "bg-teal-600",
-    soft: "bg-teal-100",
-    text: "text-teal-900",
+    soft: "bg-teal-100 dark:bg-teal-500/15",
+    text: "text-teal-900 dark:text-teal-300",
     ring: "ring-teal-400",
   },
   "#10B981": {
     name: "Esmeralda",
     bar: "bg-emerald-500",
-    soft: "bg-emerald-100",
-    text: "text-emerald-900",
+    soft: "bg-emerald-100 dark:bg-emerald-500/15",
+    text: "text-emerald-900 dark:text-emerald-300",
     ring: "ring-emerald-400",
   },
   "#84CC16": {
     name: "Lima",
     bar: "bg-lime-500",
-    soft: "bg-lime-100",
-    text: "text-lime-900",
+    soft: "bg-lime-100 dark:bg-lime-500/15",
+    text: "text-lime-900 dark:text-lime-300",
     ring: "ring-lime-400",
   },
   "#F59E0B": {
     name: "Âmbar",
     bar: "bg-amber-500",
-    soft: "bg-amber-100",
-    text: "text-amber-900",
+    soft: "bg-amber-100 dark:bg-amber-500/15",
+    text: "text-amber-900 dark:text-amber-300",
     ring: "ring-amber-400",
   },
   "#F97316": {
     name: "Laranja",
     bar: "bg-orange-500",
-    soft: "bg-orange-100",
-    text: "text-orange-900",
+    soft: "bg-orange-100 dark:bg-orange-500/15",
+    text: "text-orange-900 dark:text-orange-300",
     ring: "ring-orange-400",
   },
   "#EF4444": {
     name: "Vermelho",
     bar: "bg-red-500",
-    soft: "bg-red-100",
-    text: "text-red-800",
+    soft: "bg-red-100 dark:bg-red-500/15",
+    text: "text-red-800 dark:text-red-300",
     ring: "ring-red-400",
   },
   "#EC4899": {
     name: "Rosa",
     bar: "bg-pink-500",
-    soft: "bg-pink-100",
-    text: "text-pink-800",
+    soft: "bg-pink-100 dark:bg-pink-500/15",
+    text: "text-pink-800 dark:text-pink-300",
     ring: "ring-pink-400",
   },
   "#A855F7": {
     name: "Púrpura",
     bar: "bg-purple-500",
-    soft: "bg-purple-100",
-    text: "text-purple-800",
+    soft: "bg-purple-100 dark:bg-purple-500/15",
+    text: "text-purple-800 dark:text-purple-300",
     ring: "ring-purple-400",
   },
   "#8B5CF6": {
     name: "Violeta",
     bar: "bg-violet-500",
-    soft: "bg-violet-100",
-    text: "text-violet-800",
+    soft: "bg-violet-100 dark:bg-violet-500/15",
+    text: "text-violet-800 dark:text-violet-300",
     ring: "ring-violet-400",
   },
   "#64748B": {
     name: "Cinza",
     bar: "bg-slate-500",
-    soft: "bg-slate-200",
-    text: "text-slate-800",
+    soft: "bg-slate-200 dark:bg-slate-500/20",
+    text: "text-slate-800 dark:text-slate-300",
     ring: "ring-slate-400",
   },
 };
@@ -129,8 +129,8 @@ export const PHASE_COLORS: Record<string, PhaseColorTokens> = {
 export const DEFAULT_PHASE_COLOR: PhaseColorTokens = {
   name: "Padrão",
   bar: "bg-slate-400",
-  soft: "bg-slate-100",
-  text: "text-slate-700",
+  soft: "bg-slate-100 dark:bg-slate-500/15",
+  text: "text-slate-700 dark:text-slate-300",
   ring: "ring-slate-300",
 };
 
@@ -181,8 +181,10 @@ export interface LabelStyle {
  * mantém contraste mesmo em cores muito claras (amarelo, lima), onde o
  * `text-white` anterior falhava.
  *
- * Em cores claras demais, o texto escurece para um cinza-escuro neutro em vez
- * de usar a própria cor, garantindo o mínimo AA.
+ * Em cores claras demais, o texto deixa de usar a própria cor e passa a
+ * seguir `currentcolor` — que é quase-preto no tema claro e quase-branco no
+ * escuro. Foi o jeito de atender aos dois temas numa cor que é calculada em
+ * tempo de execução e portanto não aceita variante `dark:` do Tailwind.
  */
 export function getLabelStyle(hex: string | null | undefined): LabelStyle {
   const rgb = hex ? parseHex(hex) : null;
@@ -202,9 +204,17 @@ export function getLabelStyle(hex: string | null | undefined): LabelStyle {
   // como texto sobre fundo claro — usa um neutro escuro no lugar.
   const isLight = luminance > 0.45;
 
+  // `color-mix` com `currentcolor` resolve os dois temas de uma vez: no
+  // claro o texto se aproxima do preto, no escuro do branco, porque
+  // `currentcolor` herda a cor de texto vigente. Cor calculada em tempo de
+  // execução não tem como usar variante `dark:` do Tailwind.
+  const readable = isLight
+    ? "color-mix(in srgb, currentcolor 78%, transparent)"
+    : `color-mix(in srgb, rgb(${r}, ${g}, ${b}) 72%, currentcolor)`;
+
   return {
-    backgroundColor: `rgba(${r}, ${g}, ${b}, 0.14)`,
-    color: isLight ? "hsl(231 30% 20%)" : `rgb(${r}, ${g}, ${b})`,
+    backgroundColor: `rgba(${r}, ${g}, ${b}, 0.16)`,
+    color: readable,
     borderColor: `rgba(${r}, ${g}, ${b}, 0.35)`,
   };
 }
@@ -217,14 +227,14 @@ export function getLabelStyle(hex: string | null | undefined): LabelStyle {
  * sempre a mesma cor, em qualquer tela e sessão.
  */
 const AVATAR_COLORS: readonly { bg: string; text: string }[] = [
-  { bg: "bg-blue-100", text: "text-blue-800" },
-  { bg: "bg-emerald-100", text: "text-emerald-800" },
-  { bg: "bg-amber-100", text: "text-amber-900" },
-  { bg: "bg-rose-100", text: "text-rose-800" },
-  { bg: "bg-violet-100", text: "text-violet-800" },
-  { bg: "bg-cyan-100", text: "text-cyan-900" },
-  { bg: "bg-orange-100", text: "text-orange-900" },
-  { bg: "bg-teal-100", text: "text-teal-900" },
+  { bg: "bg-blue-100 dark:bg-blue-500/20", text: "text-blue-800 dark:text-blue-200" },
+  { bg: "bg-emerald-100 dark:bg-emerald-500/20", text: "text-emerald-800 dark:text-emerald-200" },
+  { bg: "bg-amber-100 dark:bg-amber-500/20", text: "text-amber-900 dark:text-amber-200" },
+  { bg: "bg-rose-100 dark:bg-rose-500/20", text: "text-rose-800 dark:text-rose-200" },
+  { bg: "bg-violet-100 dark:bg-violet-500/20", text: "text-violet-800 dark:text-violet-200" },
+  { bg: "bg-cyan-100 dark:bg-cyan-500/20", text: "text-cyan-900 dark:text-cyan-200" },
+  { bg: "bg-orange-100 dark:bg-orange-500/20", text: "text-orange-900 dark:text-orange-200" },
+  { bg: "bg-teal-100 dark:bg-teal-500/20", text: "text-teal-900 dark:text-teal-200" },
 ];
 
 export function getAvatarColor(seed: string): { bg: string; text: string } {

@@ -4,6 +4,7 @@ import { MobileNav } from "@/components/layout/mobile-nav";
 import { NotificationsBell } from "@/components/layout/notifications-bell";
 import { OrgSwitcher } from "@/components/layout/org-switcher";
 import { Sidebar } from "@/components/layout/sidebar";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ToastProvider } from "@/components/ui/toast";
@@ -59,6 +60,8 @@ export default async function AppLayout({
                   {activeOrganization.name}
                 </span>
               ) : null}
+
+              <ThemeToggle />
 
               <NotificationsBell items={notifications} unreadCount={unreadCount} />
 

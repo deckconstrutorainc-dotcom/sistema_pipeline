@@ -259,7 +259,7 @@ export function CardTile({
               <span
                 className={cn(
                   "tabular flex items-center gap-0.5",
-                  checklistComplete && "text-emerald-700",
+                  checklistComplete && "text-emerald-700 dark:text-emerald-400",
                 )}
               >
                 <CheckSquare className="size-3" aria-hidden />
@@ -299,7 +299,7 @@ export function CardTile({
               <span
                 className={cn(
                   "tabular flex items-center gap-0.5 font-medium",
-                  dueStatus === "overdue" ? "text-destructive" : "text-amber-700",
+                  dueStatus === "overdue" ? "text-destructive" : "text-amber-700 dark:text-amber-400",
                 )}
               >
                 <Calendar className="size-3" aria-hidden />

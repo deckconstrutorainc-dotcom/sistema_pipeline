@@ -1,6 +1,8 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 
+import { ThemeScript } from "@/components/layout/theme-script";
+
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -29,7 +31,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className={inter.variable}>
+    // `suppressHydrationWarning`: o ThemeScript altera a classe do <html>
+    // antes da hidratação, então o React encontra um valor diferente do que
+    // renderizou no servidor. É esperado e restrito a este elemento.
+    <html lang="pt-BR" className={inter.variable} suppressHydrationWarning>
+      <head>
+        <ThemeScript />
+      </head>
       <body className="min-h-screen font-sans antialiased">{children}</body>
     </html>
   );

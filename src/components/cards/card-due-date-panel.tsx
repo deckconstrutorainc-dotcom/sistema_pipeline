@@ -165,7 +165,7 @@ export function CardDueDatePanel({
           "group/due flex w-full items-center gap-1.5 rounded px-1 py-0.5 text-left text-ui-sm transition-colors",
           !readOnly && "hover:bg-accent",
           status === "overdue" && "font-medium text-destructive",
-          status === "due_soon" && "font-medium text-amber-700",
+          status === "due_soon" && "font-medium text-amber-700 dark:text-amber-400",
         )}
         title={readOnly ? undefined : "Editar prazo"}
       >
@@ -180,7 +180,7 @@ export function CardDueDatePanel({
       {status === "overdue" ? (
         <p className="text-ui-2xs text-destructive">Prazo vencido</p>
       ) : status === "due_soon" ? (
-        <p className="text-ui-2xs text-amber-700">Vence em breve</p>
+        <p className="text-ui-2xs text-amber-700 dark:text-amber-400">Vence em breve</p>
       ) : null}
       {error ? <p className="text-ui-xs text-destructive">{error}</p> : null}
     </div>

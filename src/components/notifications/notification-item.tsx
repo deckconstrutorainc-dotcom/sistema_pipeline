@@ -18,13 +18,13 @@ import { markNotificationRead } from "@/server/actions/notifications";
 import type { NotificationSummary, NotificationType } from "@/server/queries/notifications";
 
 const iconByType: Record<NotificationType, { icon: LucideIcon; className: string }> = {
-  card_assigned: { icon: UserPlus, className: "bg-blue-100 text-blue-800" },
-  comment_added: { icon: MessageSquare, className: "bg-violet-100 text-violet-800" },
-  attachment_added: { icon: Paperclip, className: "bg-slate-200 text-slate-800" },
-  card_due_soon: { icon: Clock, className: "bg-amber-100 text-amber-900" },
-  card_overdue: { icon: AlarmClock, className: "bg-red-100 text-red-800" },
-  related_card_completed: { icon: Link2, className: "bg-emerald-100 text-emerald-900" },
-  automation: { icon: Zap, className: "bg-cyan-100 text-cyan-900" },
+  card_assigned: { icon: UserPlus, className: "bg-blue-100 text-blue-800 dark:bg-blue-500/15 dark:text-blue-300" },
+  comment_added: { icon: MessageSquare, className: "bg-violet-100 text-violet-800 dark:bg-violet-500/15 dark:text-violet-300" },
+  attachment_added: { icon: Paperclip, className: "bg-slate-200 text-slate-800 dark:bg-slate-500/20 dark:text-slate-300" },
+  card_due_soon: { icon: Clock, className: "bg-amber-100 text-amber-900 dark:bg-amber-500/15 dark:text-amber-300" },
+  card_overdue: { icon: AlarmClock, className: "bg-red-100 text-red-800 dark:bg-red-500/15 dark:text-red-300" },
+  related_card_completed: { icon: Link2, className: "bg-emerald-100 text-emerald-900 dark:bg-emerald-500/15 dark:text-emerald-300" },
+  automation: { icon: Zap, className: "bg-cyan-100 text-cyan-900 dark:bg-cyan-500/15 dark:text-cyan-300" },
 };
 
 /**
